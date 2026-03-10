@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Creador de Mapas de Calor - Zombies</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700;900&display=swap');
+
+        body { 
+            margin: 0; background: #111; color: white; 
+            font-family: 'Poppins', sans-serif; display: flex; 
+            height: 100vh; overflow: hidden;
+        }
+
+        #post-wrapper {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #1a1a1a;
+        }
+
+        #post-container {
+            width: 1080px; height: 1350px;
+            position: relative; overflow: hidden; 
+            background-color: #AED0E2; 
+            flex-shrink: 0;
+            transform: translateZ(0); 
+        }
+
+        /* CAPAS DE TEXTO */
+        #info-fuente {
+            position: absolute; top: 25px; right: 25px; z-index: 10;
+            color: rgba(0,0,0,0.6); font-size: 25PX; text-transform: uppercase; font-weight: 400;
+        }
+
+        #contenedor-titulos {
+            position: absolute; top: 60px; left: 0; right: 0; z-index: 10; 
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            pointer-events: none; padding: 0 50px;
+        }
+
+        #mapa-titulo {
+            color: #000; font-size: 45px; font-weight: 900; line-height: 1.1; 
+            margin-top: 700px; margin-left: 560px; text-transform: uppercase; white-space: pre-line;
+        }
+
+        #mapa-bajada {
+            color: #333; font-size: 26px; margin-left: 560px; font-weight: 400; line-height: 1.2; max-width: 800px;
+        }
+
+        /* CUADRO MIN/MAX ESTILO IMAGEN */
+        #stats-minmax {
+            position: absolute; bottom: 250px; left: 620px; z-index: 10;
+            display: none; flex-direction: column; gap: 10px;
+            pointer-events: none;
+        }
+
+        .stat-row {
+            display: flex; align-items: center; gap: 15px;
+            color: #000; font-size: 30px; font-weight: 400;
+        }
+
+        .stat-label { font-weight: 400; min-width: 100px; }
+        .stat-flag { width: 54px; height: auto; border-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .stat-value { font-weight: 400; }
+
+        .mapa { 
+            position: absolute; inset: 0; width: 100%; height: 100%; 
+            background-color: #AFAFAF; z-index: 1; 
+            -webkit-mask-size: 100% 100% !important; mask-size: 100% 100% !important;
+            -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+        }
+        
+        /* Máscaras (Se mantienen igual) */
+        #mapa-juj { -webkit-mask: url('https://i.imgur.com/QxghkRK.png'); mask: url('https://i.imgur.com/QxghkRK.png'); }
+        #mapa-sal { -webkit-mask: url('https://i.imgur.com/Y5GBtxy.png'); mask: url('https://i.imgur.com/Y5GBtxy.png'); }
+        #mapa-tuc { -webkit-mask: url('https://i.imgur.com/7J73Reo.png'); mask: url('https://i.imgur.com/7J73Reo.png'); }
+        #mapa-cat { -webkit-mask: url('https://i.imgur.com/zeioqfI.png'); mask: url('https://i.imgur.com/zeioqfI.png'); }
+        #mapa-lro { -webkit-mask: url('https://i.imgur.com/uBqNyMp.png'); mask: url('https://i.imgur.com/uBqNyMp.png'); }
+        #mapa-sde { -webkit-mask: url('https://i.imgur.com/2DuSeiw.png'); mask: url('https://i.imgur.com/2DuSeiw.png'); }
+        #mapa-for { -webkit-mask: url('https://i.imgur.com/7OqPIqb.png'); mask: url('https://i.imgur.com/7OqPIqb.png'); }
+        #mapa-cha { -webkit-mask: url('https://i.imgur.com/P0OxyII.png'); mask: url('https://i.imgur.com/P0OxyII.png'); }
+        #mapa-mis { -webkit-mask: url('https://i.imgur.com/JW4YUFq.png'); mask: url('https://i.imgur.com/JW4YUFq.png'); }
+        #mapa-cor { -webkit-mask: url('https://i.imgur.com/O9KWfrF.png'); mask: url('https://i.imgur.com/O9KWfrF.png'); }
+        #mapa-sfe { -webkit-mask: url('https://i.imgur.com/q5CmfGU.png'); mask: url('https://i.imgur.com/q5CmfGU.png'); }
+        #mapa-eri { -webkit-mask: url('https://i.imgur.com/WgkTiRT.png'); mask: url('https://i.imgur.com/WgkTiRT.png'); }
+        #mapa-cba { -webkit-mask: url('https://i.imgur.com/L7P252y.png'); mask: url('https://i.imgur.com/L7P252y.png'); }
+        #mapa-sju { -webkit-mask: url('https://i.imgur.com/3l87Dja.png'); mask: url('https://i.imgur.com/3l87Dja.png'); }
+        #mapa-slu { -webkit-mask: url('https://i.imgur.com/3PdIgb5.png'); mask: url('https://i.imgur.com/3PdIgb5.png'); }
+        #mapa-mza { -webkit-mask: url('https://i.imgur.com/0qbRgBO.png'); mask: url('https://i.imgur.com/0qbRgBO.png'); }
+        #mapa-pba { -webkit-mask: url('https://i.imgur.com/H2oRBcZ.png'); mask: url('https://i.imgur.com/H2oRBcZ.png'); }
+        #mapa-pam { -webkit-mask: url('https://i.imgur.com/rBEWUBo.png'); mask: url('https://i.imgur.com/rBEWUBo.png'); }
+        #mapa-neu { -webkit-mask: url('https://i.imgur.com/asY1E9k.png'); mask: url('https://i.imgur.com/asY1E9k.png'); }
+        #mapa-rno { -webkit-mask: url('https://i.imgur.com/t0jYGd4.png'); mask: url('https://i.imgur.com/t0jYGd4.png'); }
+        #mapa-chu { -webkit-mask: url('https://i.imgur.com/9Ovjn2L.png'); mask: url('https://i.imgur.com/9Ovjn2L.png'); }
+        #mapa-scr { -webkit-mask: url('https://i.imgur.com/VY7RrU5.png'); mask: url('https://i.imgur.com/VY7RrU5.png'); }
+        #mapa-tdf { -webkit-mask: url('https://i.imgur.com/JOzDzRl.png'); mask: url('https://i.imgur.com/JOzDzRl.png'); }
+        #mapa-cab { -webkit-mask: url('https://i.imgur.com/WFuthky.png'); mask: url('https://i.imgur.com/WFuthky.png'); }
+
+        .valor-mapa {
+            position: absolute; z-index: 5; font-size: 38px;
+            color: black; pointer-events: none; display: none; transform: translate(-50%, -50%);
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .pin-master {
+            position: absolute; display: none; align-items: center; gap: 10px;
+            transform: translate(-22.5px, -45px); z-index: 10; pointer-events: none;
+        }
+        .pin-svg { width: 45px; height: 45px; fill: #D83939; flex-shrink: 0;}
+        .contenedor-texto { display: flex; align-items: center; filter: drop-shadow(0 4px 10px rgba(0,0,0,1)); }
+        .etiqueta-nombre { color: #fff; font-size: 23px; white-space: nowrap; text-transform: uppercase; }
+        .flag-pin { width: 35px; height: auto; border-radius: 3px; object-fit: cover;}
+
+        .overlay-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; z-index: 4; pointer-events: none; }
+
+        .panel { width: 1040px; background: #000; padding: 20px; border-left: 2px solid #333; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+        .config-calor { background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #2ecc71; margin-bottom: 10px; }
+        .row-ctrl { display: flex; align-items: center; gap: 6px; background: #111; padding: 8px; border-radius: 6px; margin-bottom: 5px; }
+        .row-ctrl img { width: 66px; height: 48px; object-fit: cover; }
+        .row-ctrl span { flex-grow: 1; font-size: 22px; font-weight: 300; text-transform: uppercase; }
+        
+        textarea, input[type="number"], input[type="text"] { padding: 8px; background: #000; border: 1px solid #444; color: white; border-radius: 4px; font-family: inherit; }
+        textarea { height: 80px; resize: vertical; font-size: 18px; }
+        .btn-pin { padding: 4px 15px; cursor: pointer; background: #333; color: white; border: none; border-radius: 4px; font-size: 32px; font-weight: bold; }
+        .btn-pin.active { background: #e74c3c; }
+        .btn-descargar { background: #2ecc71; color: black; border: none; padding: 15px; font-weight: 900; cursor: pointer; border-radius: 4px; margin-top: 10px; }
+        
+        #canvas-render { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="post-wrapper">
+    <div id="post-container" onclick="colocarPin(event)">
+        <canvas id="canvas-render"></canvas>
+        <div id="info-fuente"></div>
+        <div id="contenedor-titulos">
+            <div id="mapa-titulo"></div>
+            <div id="mapa-bajada"></div>
+        </div>
+        
+        <div id="stats-minmax">
+            <div class="stat-row">
+                <div class="stat-label">Min:</div>
+                <img id="flag-min" class="stat-flag" src="" crossorigin="anonymous" style="margin-left:-40px">
+                <div id="txt-min" class="stat-value"></div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-label">Max:</div>
+                <img id="flag-max" class="stat-flag" src="" crossorigin="anonymous" style="margin-left:-40px">
+                <div id="txt-max" class="stat-value"></div>
+            </div>
+        </div>
+
+        <div id="mapas-container"></div>
+        <div id="valores-layer"></div> 
+        <div id="pines-layer"></div>
+        <img class="overlay-img" src="https://i.imgur.com/kUVMliq.png" crossorigin="anonymous">
+        <img class="overlay-img" src="https://i.imgur.com/6hVhhBJ.png" crossorigin="anonymous">
+    </div>
+</div>
+
+<div class="panel">
+    <h2 style="color: #2ecc71; margin: 0; font-size: 18px;">TEXTOS DEL MAPA</h2>
+    <div class="config-calor">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <textarea id="inp-titulo" placeholder="TÍTULO DEL MAPA..." oninput="actualizarTextos()"></textarea>
+            <input type="text" id="inp-bajada" placeholder="Descripción corta..." oninput="actualizarTextos()">
+            <input type="text" id="inp-fuente" placeholder="FUENTE DE INFORMACIÓN..." oninput="actualizarTextos()">
+        </div>
+    </div>
+
+    <h2 style="color: #2ecc71; margin: 0; font-size: 18px;">CONFIGURACIÓN COLORES</h2>
+    <div class="config-calor">
+        <div style="display: flex; gap: 10px;">
+            <div style="flex:1">
+                <label style="font-size:9px; color:#aaa">MÍNIMO</label>
+                <input type="number" id="val-min" value="0" oninput="actualizar()">
+                <input type="color" id="col-min" value="#15B168" oninput="actualizar()" style="width:100%; height:25px; margin-top:5px; padding:0; border:none;">
+            </div>
+            <div style="flex:1">
+                <label style="font-size:9px; color:#aaa">MEDIO</label>
+                <input type="number" id="val-mid" value="50" oninput="actualizar()">
+                <input type="color" id="col-mid" value="#FFFFFF" oninput="actualizar()" style="width:100%; height:25px; margin-top:5px; padding:0; border:none;">
+            </div>
+            <div style="flex:1">
+                <label style="font-size:9px; color:#aaa">MÁXIMO</label>
+                <input type="number" id="val-max" value="100" oninput="actualizar()">
+                <input type="color" id="col-max" value="#C7361F" oninput="actualizar()" style="width:100%; height:25px; margin-top:5px; padding:0; border:none;">
+            </div>
+        </div>
+    </div>
+    
+    <div id="lista-paises"></div>
+    <button class="btn-descargar" onclick="descargar()">DESCARGAR IMAGEN</button>
+</div>
+
+<script>
+    const tamaños = { "1": "60px", "2": "50px", "3": "38px", "4": "26px" };
+
+    const paises = [
+        { id: 'juj', nombre: 'Jujuy', x: 41.5, y: 8.15, flag: 'https://i.imgur.com/4CVVDDF.png' },
+        { id: 'sal', nombre: 'Salta', x: 43.31, y: 13.77, flag: 'https://i.imgur.com/s5t5yVu.png' },
+        { id: 'tuc', nombre: 'Tucumán', x: 43.35, y: 18.52, flag: 'https://i.imgur.com/JJfCDKg.png' },
+        { id: 'cat', nombre: 'Catamarca', x: 36.87, y: 19.11, flag: 'https://i.imgur.com/MrxfCvL.png' },
+        { id: 'lro', nombre: 'La Rioja', x: 37.91, y: 25.77, flag: 'https://i.imgur.com/zRA2U9m.png' },
+        { id: 'sde', nombre: 'S. del Estero', x: 49.72, y: 20.81, flag: 'https://i.imgur.com/hXBwJGV.png' },
+        { id: 'for', nombre: 'Formosa', x: 61.48, y: 13.33, flag: 'https://i.imgur.com/BcT0u7S.png' },
+        { id: 'cha', nombre: 'Chaco', x: 59.2, y: 18.52, flag: 'https://i.imgur.com/IANq7Ic.png' },
+        { id: 'mis', nombre: 'Misiones', x: 77.64, y: 19.63, flag: 'https://i.imgur.com/STqVfag.png' },
+        { id: 'cor', nombre: 'Corrientes', x: 67.5, y: 24.1, flag: 'https://i.imgur.com/MrD1fhN.png' },
+        { id: 'sfe', nombre: 'Santa Fe', x: 57.08, y: 29.26, flag: 'https://i.imgur.com/SJXNdcR.png' },
+        { id: 'eri', nombre: 'Entre Ríos', x: 61.25, y: 33.33, flag: 'https://i.imgur.com/dtYaorD.png' },
+        { id: 'cba', nombre: 'Córdoba', x: 48.32, y: 32.81, flag: 'https://i.imgur.com/x26lgiB.png' },
+        { id: 'sju', nombre: 'San Juan', x: 32.45, y: 29.33, flag: 'https://i.imgur.com/rzIqqRq.png' },
+        { id: 'mza', nombre: 'Mendoza', x: 33.72, y: 39.70, flag: 'https://i.imgur.com/TSGr2VI.png' },
+        { id: 'slu', nombre: 'San Luis', x: 41.17, y: 37.40, flag: 'https://i.imgur.com/C3kBr2y.png' },
+        { id: 'pba', nombre: 'B. Aires', x: 57.62, y: 44.81, flag: 'https://i.imgur.com/wB5gyFl.png' },
+        { id: 'cab', nombre: 'Ciudad B. Aires', x: 65.62, y: 39.3, flag: 'https://i.imgur.com/6novWat.png' },
+        { id: 'pam', nombre: 'La Pampa', x: 42.3, y: 46.81, flag: 'https://i.imgur.com/OuCd4aj.png' },
+        { id: 'neu', nombre: 'Neuquén', x: 30.76, y: 50.37, flag: 'https://i.imgur.com/RgbywsI.png' },
+        { id: 'rno', nombre: 'Río Negro', x: 37.97, y: 55.26, flag: 'https://i.imgur.com/MAiUXJ5.png' },
+        { id: 'chu', nombre: 'Chubut', x: 34.18, y: 64.8, flag: 'https://i.imgur.com/x0tZrNP.png' },
+        { id: 'scr', nombre: 'Santa Cruz', x: 31.46, y: 78.29, flag: 'https://i.imgur.com/1LDKRvO.png' },
+        { id: 'tdf', nombre: 'T. del Fuego', x: 38.46, y: 92.59, flag: 'https://i.imgur.com/7oJNJ6D.png' }
+    ];
+
+    let modoActivo = null;
+    let ladoActivo = 'derecha';
+
+    function init() {
+        const lista = document.getElementById('lista-paises');
+        const mapasCont = document.getElementById('mapas-container');
+        const valoresCont = document.getElementById('valores-layer');
+        const pinesCont = document.getElementById('pines-layer');
+
+        paises.forEach(p => {
+            const m = document.createElement('div'); m.id = `mapa-${p.id}`; m.className = 'mapa'; mapasCont.appendChild(m);
+            const v = document.createElement('div'); v.id = `val-map-${p.id}`; v.className = 'valor-mapa'; v.style.left = p.x + "%"; v.style.top = p.y + "%"; valoresCont.appendChild(v);
+            const div = document.createElement('div'); div.className = 'row-ctrl';
+            div.innerHTML = `
+                <img src="${p.flag}">
+                <span>${p.nombre}</span>
+                <input type="number" id="val-${p.id}" oninput="actualizar()" style="width:120px;height:40px;font-size:30px">
+                <input type="number" id="size-${p.id}" value="3" min="1" max="4" oninput="actualizar()" style="width:60px; height:40px;border-color: #2ecc71;font-size:30px">
+                <input type="text" id="txt-${p.id}" placeholder="..." oninput="actualizar()" style="width:120px;height:40px;font-size:30px">
+                <div style="display:flex; gap:2px">
+                    <button class="btn-pin" id="btn-L-${p.id}" onclick="setModo('${p.id}', 'izquierda')">L</button>
+                    <button class="btn-pin" id="btn-R-${p.id}" onclick="setModo('${p.id}', 'derecha')">R</button>
+                </div>
+            `;
+            lista.appendChild(div);
+
+            const pin = document.createElement('div'); pin.id = `pin-${p.id}`; pin.className = 'pin-master derecha';
+            pin.innerHTML = `
+                <svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                <div class="contenedor-texto"><img src="${p.flag}" class="flag-pin" id="flag-${p.id}" crossorigin="anonymous"><div class="etiqueta-nombre" id="lbl-${p.id}">UBICACIÓN</div></div>
+            `;
+            pinesCont.appendChild(pin);
+        });
+    }
+
+    function actualizarTextos() {
+        document.getElementById('mapa-titulo').innerText = document.getElementById('inp-titulo').value;
+        document.getElementById('mapa-bajada').innerText = document.getElementById('inp-bajada').value;
+        document.getElementById('info-fuente').innerText = document.getElementById('inp-fuente').value;
+    }
+
+    function setModo(id, lado) {
+        modoActivo = id; ladoActivo = lado;
+        document.querySelectorAll('.btn-pin').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-${lado === 'izquierda' ? 'L' : 'R'}-${id}`).classList.add('active');
+    }
+
+    function colocarPin(e) {
+        if (!modoActivo) return;
+        const container = document.getElementById('post-container');
+        const rect = container.getBoundingClientRect();
+        const pin = document.getElementById(`pin-${modoActivo}`);
+        pin.style.left = (((e.clientX - rect.left) / rect.width) * 100).toFixed(2) + "%"; 
+        pin.style.top = (((e.clientY - rect.top) / rect.height) * 100).toFixed(2) + "%"; 
+        pin.style.display = "flex"; pin.className = `pin-master ${ladoActivo}`;
+        document.getElementById(`flag-${modoActivo}`).style.margin = (ladoActivo === 'derecha') ? "0 8px 0 -10px" : "0 -10px 0 8px";
+        modoActivo = null; document.querySelectorAll('.btn-pin').forEach(b => b.classList.remove('active'));
+    }
+
+    function interpolateColor(c1, c2, f) {
+        const r1 = parseInt(c1.substring(1,3), 16), g1 = parseInt(c1.substring(3,5), 16), b1 = parseInt(c1.substring(5,7), 16);
+        const r2 = parseInt(c2.substring(1,3), 16), g2 = parseInt(c2.substring(3,5), 16), b2 = parseInt(c2.substring(5,7), 16);
+        const hex = (x) => Math.round(x).toString(16).padStart(2, '0');
+        return `#${hex(r1 + f * (r2 - r1))}${hex(g1 + f * (g2 - g1))}${hex(b1 + f * (b2 - b1))}`;
+    }
+
+    function actualizar() {
+        const minV = parseFloat(document.getElementById('val-min').value) || 0;
+        const midV = parseFloat(document.getElementById('val-mid').value) || 50;
+        const maxV = parseFloat(document.getElementById('val-max').value) || 100;
+        const minC = document.getElementById('col-min').value;
+        const midC = document.getElementById('col-mid').value;
+        const maxC = document.getElementById('col-max').value;
+
+        let listaValores = [];
+
+        paises.forEach(p => {
+            const vIn = document.getElementById(`val-${p.id}`);
+            const sIn = document.getElementById(`size-${p.id}`);
+            const tIn = document.getElementById(`txt-${p.id}`);
+            const mapa = document.getElementById(`mapa-${p.id}`);
+            const vMap = document.getElementById(`val-map-${p.id}`);
+            const lbl = document.getElementById(`lbl-${p.id}`);
+
+            vMap.style.fontSize = tamaños[sIn.value] || "38px";
+
+            if (vIn.value !== "") {
+                const val = parseFloat(vIn.value);
+                listaValores.push({ nombre: p.nombre, valor: val, flag: p.flag });
+                let colorFinal = val <= midV ? interpolateColor(minC, midC, Math.max(0, Math.min(1, (val - minV) / (midV - minV)))) : interpolateColor(midC, maxC, Math.max(0, Math.min(1, (val - midV) / (maxV - midV))));
+                mapa.style.backgroundColor = colorFinal;
+                vMap.innerText = vIn.value; vMap.style.display = "block";
+            } else {
+                mapa.style.backgroundColor = "#AFAFAF"; vMap.style.display = "none";
+            }
+            lbl.innerText = tIn.value !== "" ? tIn.value : p.nombre.toUpperCase();
+        });
+
+        // ACTUALIZAR CUADRO MIN/MAX ESTILO IMAGEN
+        if (listaValores.length > 0) {
+            const vMin = listaValores.reduce((prev, curr) => prev.valor < curr.valor ? prev : curr);
+            const vMax = listaValores.reduce((prev, curr) => prev.valor > curr.valor ? prev : curr);
+            
+            document.getElementById('flag-min').src = vMin.flag;
+            document.getElementById('txt-min').innerText = `${vMin.nombre} (${vMin.valor}$)`;
+            
+            document.getElementById('flag-max').src = vMax.flag;
+            document.getElementById('txt-max').innerText = `${vMax.nombre} (${vMax.valor}$)`;
+            
+            document.getElementById('stats-minmax').style.display = "flex";
+        } else {
+            document.getElementById('stats-minmax').style.display = "none";
+        }
+    }
+
+    async function descargar(){
+        const container = document.getElementById("post-container");
+        const canvasR = document.getElementById("canvas-render");
+        const ctx = canvasR.getContext("2d");
+        canvasR.width = 1080; canvasR.height = 1350;
+        canvasR.style.display = "block";
+        ctx.clearRect(0, 0, 1080, 1350);
+        const promesas = paises.map(p => {
+            return new Promise((res) => {
+                const img = new Image(); img.crossOrigin = "anonymous"; img.src = `https://i.imgur.com/${getImgCode(p.id)}.png`;
+                img.onload = () => {
+                    const color = document.getElementById(`mapa-${p.id}`).style.backgroundColor || "rgb(175, 175, 175)";
+                    const tCanvas = document.createElement('canvas'); tCanvas.width = 1080; tCanvas.height = 1350;
+                    const tCtx = tCanvas.getContext('2d');
+                    tCtx.drawImage(img, 0, 0, 1080, 1350); tCtx.globalCompositeOperation = 'source-in';
+                    tCtx.fillStyle = color; tCtx.fillRect(0, 0, 1080, 1350);
+                    ctx.drawImage(tCanvas, 0, 0); res();
+                };
+                img.onerror = res;
+            });
+        });
+        await Promise.all(promesas);
+        document.getElementById("mapas-container").style.opacity = "0";
+        html2canvas(container, { useCORS: true, scale: 1 }).then(canvas => {
+            const link = document.createElement("a");
+            link.download = `Mapa_Calor_Zombies_${Date.now()}.png`;
+            link.href = canvas.toDataURL("image/png"); link.click();
+            canvasR.style.display = "none"; document.getElementById("mapas-container").style.opacity = "1";
+        });
+    }
+
+    function getImgCode(id) {
+        const codes = {juj:'QxghkRK',sal:'Y5GBtxy',tuc:'7J73Reo',cat:'zeioqfI',lro:'uBqNyMp',sde:'2DuSeiw',for:'7OqPIqb',cha:'P0OxyII',mis:'JW4YUFq',cor:'O9KWfrF',sfe:'q5CmfGU',eri:'WgkTiRT',cba:'L7P252y',sju:'3l87Dja',slu:'3PdIgb5',mza:'0qbRgBO',pba:'H2oRBcZ',cab:'WFuthky',pam:'rBEWUBo',neu:'asY1E9k',rno:'t0jYGd4',chu:'9Ovjn2L',scr:'VY7RrU5',tdf:'JOzDzRl'};
+        return codes[id];
+    }
+
+    init();
+</script>
+
+</body>
+</html>

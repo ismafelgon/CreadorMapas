@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Zombies FC - Editor HTML/CSS</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600;700;800&display=swap');
+
+:root{
+--local-bg:#4b0022;
+--visit-bg:#034694;
+--accent:#2ecc71;
+}
+
+body{
+margin:0;
+background:#111;
+color:white;
+font-family:'Segoe UI',Arial,sans-serif;
+display:flex;
+}
+
+/* POST */
+
+#post-container{
+width:1080px;
+height:1350px;
+position:relative;
+overflow:hidden;
+background:black;
+flex-shrink:0;
+}
+
+.background-photo {
+    /* En lugar de width: 100%, usamos min-width para que mantenga su forma */
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    
+    /* Centrado perfecto para que el recorte sea parejo */
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    
+    object-fit: cover;
+}
+
+.overlay {
+    position: absolute;
+    bottom: 0px; 
+    width: 100%;
+    /* 1. Lo hacemos más alto (65% del post) para que el degrade sea sutil */
+    height: 65%; 
+    
+    /* 2. El degrade empieza transparente, y el negro (0.9) recién se nota al 85% */
+    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.9) 85%);
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    
+    /* 3. Subimos el contenido para que no toque el borde inferior */
+    padding-bottom: 220px; 
+    z-index: 2;
+}
+
+.info-header{
+text-align:center;
+margin-bottom:30px;
+}
+
+.torneo{
+font-size:42px;
+font-weight:800;
+margin:-10px 0 0 0;
+letter-spacing:2px;
+font-family:'Poppins', sans-serif;
+}
+
+.estadio{
+font-size:42px;
+color:#ccc;
+margin:-10px 0 0 0;
+font-family:'Poppins', sans-serif;
+font-weight:500;
+}
+
+.scoreboard-row{
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.box-escudo{
+width:155px;
+height:155px;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.box-escudo img{
+height:130px;
+width:auto;
+}
+
+.local{background:var(--local-bg);}
+.visit{background:var(--visit-bg);}
+
+.siglas{
+background:rgba(0,0,0,0.8);
+width:235px;
+height:147px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:139px;
+font-family:'Bebas Neue',sans-serif;
+padding-top:10px;
+}
+
+.goles-central {
+    background: white;
+    color: black;
+    width: 192px;
+    height: 155px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 144px;
+    font-family: 'Bebas Neue', sans-serif;
+    padding-top: 10px;
+    box-sizing: border-box;
+    
+    /* Sombra de la caja (exterior) */
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.5);
+    
+    /* Sombra del texto (le da un toque premium a los números) */
+    text-shadow: 0px 0px 18px rgba(0, 0, 0, 0.45);
+}
+
+/* PANEL */
+
+.panel{
+padding:20px;
+background:#1a1a1a;
+width:350px;
+height:100vh;
+overflow-y:auto;
+}
+
+.input-group{
+margin-bottom:15px;
+}
+
+label{
+display:block;
+color:var(--accent);
+font-size:12px;
+font-weight:bold;
+margin-bottom:5px;
+}
+
+input{
+width:100%;
+padding:10px;
+background:#222;
+border:1px solid #444;
+color:white;
+box-sizing:border-box;
+}
+
+button{
+width:100%;
+padding:15px;
+background:var(--accent);
+border:none;
+font-weight:bold;
+cursor:pointer;
+}
+
+.scorers{
+position:absolute;
+bottom:40px;
+left:0;
+width:100%;
+height:80px;
+font-family:'Poppins',sans-serif;
+font-size:36px;
+z-index:3;
+}
+
+/* PELOTA SIEMPRE EN EL CENTRO */
+
+.scorers-ball{
+position:absolute;
+left:50%;
+top:0;
+transform:translateX(-50%);
+width: 50px;
+height: auto;
+line-height:1;
+margin-top:-5px
+}
+
+/* TEXTO LOCAL */
+
+.scorers-local{
+position:absolute;
+right:50%;
+margin-right:66px;
+top:0;
+text-align:right;
+max-width:420px;
+line-height:1.2;
+}
+
+/* TEXTO VISITA */
+
+.scorers-visit{
+position:absolute;
+left:50%;
+margin-left:60px;
+top:0;
+text-align:left;
+max-width:420px;
+line-height:1.2;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="post-container">
+
+<img id="view-fondo" class="background-photo"
+src="https://upload.wikimedia.org/wikipedia/commons/8/89/Villa_Park.jpg">
+
+<div class="overlay">
+
+<div class="info-header">
+<p class="torneo" id="view-torneo">PREMIER LEAGUE - JORNADA 29</p>
+<p class="estadio" id="view-estadio">VILLA PARK - BIRMINGHAM</p>
+</div>
+
+<div class="scoreboard-row" style="margin:-25px 0 0 0;">
+
+<div class="box-escudo local">
+<img id="view-escudoL" src="" crossorigin="anonymous">
+</div>
+
+<div class="siglas" id="view-siglasL">AVL</div>
+
+<div class="goles-central" id="view-marcador">1-4</div>
+
+<div class="siglas" id="view-siglasV">CHE</div>
+
+<div class="box-escudo visit">
+<img id="view-escudoV" src="" crossorigin="anonymous">
+</div>
+
+</div>
+
+<div class="scorers" style="margin-bottom:70px">
+    <div class="scorers-local" id="view-golesL">
+        Douglas Luiz 2'
+    </div>
+
+    <img src="https://i.imgur.com/sWqUm1B.png" class="scorers-ball">
+
+    <div class="scorers-visit" id="view-golesV">
+        J. Pedro 35', 45+6', 64'<br>
+        Cole Palmer 55'
+    </div>
+</div>
+
+</div>
+
+<div class="black-bottom"></div>
+</div>
+
+<div class="panel">
+
+<h2>PERSONALIZAR</h2>
+
+<div class="input-group">
+<label>NOMBRE EQUIPO LOCAL</label>
+<input type="text" id="in-nameL" value="Central" oninput="autoCompleteL()">
+</div>
+
+<div class="input-group">
+<label>NOMBRE EQUIPO VISITA</label>
+<input type="text" id="in-nameV" value="Newells" oninput="autoCompleteV()">
+</div>
+
+<div class="input-group">
+<label>URL FONDO</label>
+<input type="text" id="in-fondo" oninput="update()">
+</div>
+
+<div class="input-group">
+<label>ESCUDO LOCAL</label>
+<input type="text" id="in-escudoL" oninput="update()">
+</div>
+
+<div class="input-group">
+<label>ESCUDO VISITA</label>
+<input type="text" id="in-escudoV" oninput="update()">
+</div>
+
+<div style="display:flex;gap:10px">
+<div class="input-group">
+<label>SIGLAS L</label>
+<input type="text" id="in-siglasL" value="ros" oninput="update()">
+</div>
+
+<div class="input-group">
+<label>GOLES L</label>
+<input type="number" id="in-golesL" value="0" oninput="update()">
+</div>
+</div>
+
+<div style="display:flex;gap:10px">
+<div class="input-group">
+<label>SIGLAS V</label>
+<input type="text" id="in-siglasV" value="nob" oninput="update()">
+</div>
+
+<div class="input-group">
+<label>GOLES V</label>
+<input type="number" id="in-golesV" value="0" oninput="update()">
+</div>
+</div>
+
+<div class="input-group">
+<label>TORNEO</label>
+<input type="text" id="in-torneo" value="PRIMERA DIVISION" oninput="update()">
+</div>
+
+<div class="input-group">
+<label>ESTADIO</label>
+<input type="text" id="in-estadio" value="ESTADIO" oninput="update()">
+</div>
+
+<div class="input-group">
+<label>GOLES LOCAL (texto)</label>
+<input type="text" id="in-golesTextoL" 
+value="" 
+oninput="update()">
+</div>
+
+<div class="input-group">
+<label>GOLES VISITA (texto)</label>
+<input type="text" id="in-golesTextoV" 
+value="" 
+oninput="update()">
+</div>
+
+<button onclick="descargar()">DESCARGAR RESULTADO</button>
+
+</div>
+
+<script>
+
+// --- DICCIONARIO DE EQUIPOS ---
+const EQUIPOS = {
+    "central": { 
+        siglas: "ROS", 
+        color: "#F3D83E", 
+        escudo: "https://i.imgur.com/g2QZOoB.png" 
+    },
+    "platense": { 
+        siglas: "PLA", 
+        color: "#473219", 
+        escudo: "https://i.imgur.com/sdHWE4G.png" 
+    },
+    "racing": { 
+        siglas: "RAC", 
+        color: "#009BDB", 
+        escudo: "https://i.imgur.com/W60CG4W.png" 
+    },
+    "river": { 
+        siglas: "RIV", 
+        color: "#E2211C", 
+        escudo: "https://i.imgur.com/UB6tl2G.png" 
+    },
+    "san lorenzo": { 
+        siglas: "SLO", 
+        color: "#212D4B", 
+        escudo: "https://i.imgur.com/iD4h0GV.png" 
+    },
+    "sarmiento": { 
+        siglas: "SAR", 
+        color: "#3A6639", 
+        escudo: "https://i.imgur.com/MR5im1i.png" 
+    },
+    "talleres": { 
+        siglas: "TAL", 
+        color: "#283253", 
+        escudo: "https://i.imgur.com/Mpyw7Lz.png" 
+    },
+    "tigre": { 
+        siglas: "TIG", 
+        color: "#024084", 
+        escudo: "https://i.imgur.com/WkRqhtu.png" 
+    },
+    "union": { 
+        siglas: "UNI", 
+        color: "#BF0C13", 
+        escudo: "https://i.imgur.com/13P015b.png" 
+    },
+    "aldosivi": { 
+        siglas: "ALD", 
+        color: "#E7C607", 
+        escudo: "https://i.imgur.com/C9GbGca.png" 
+    },
+    "argentinos": { 
+        siglas: "ARG", 
+        color: "#E11E34", 
+        escudo: "https://i.imgur.com/80C0fM4.png" 
+    },
+    "atletico tucuman": { 
+        siglas: "ATL", 
+        color: "#80A6D2", 
+        escudo: "https://i.imgur.com/DeFuzDK.png" 
+    },
+    "banfield": { 
+        siglas: "BAN", 
+        color: "#427936", 
+        escudo: "https://i.imgur.com/2YEK8KI.png" 
+    },
+    "barracas": { 
+        siglas: "BAR", 
+        color: "#D3150C", 
+        escudo: "https://i.imgur.com/JROeQms.png" 
+    },
+    "belgrano": { 
+        siglas: "BEL", 
+        color: "#3A9CD0", 
+        escudo: "https://i.imgur.com/IcEtoAk.png" 
+    },
+    "boca": { 
+        siglas: "BOC", 
+        color: "#00438D", 
+        escudo: "https://i.imgur.com/q6eUQnN.png" 
+    },
+    "central cordoba": { 
+        siglas: "CCO", 
+        color: "#333333", 
+        escudo: "https://i.imgur.com/MTET7SZ.png" 
+    },
+    "defensa y justicia": { 
+        siglas: "DYJ", 
+        color: "#007A3E", 
+        escudo: "https://i.imgur.com/k71hkAx.png" 
+    },
+    "estudiantes lp": { 
+        siglas: "EST", 
+        color: "#B61722", 
+        escudo: "https://i.imgur.com/FUp6O2e.png" 
+    },
+    "estudiantes rc": { 
+        siglas: "ERC", 
+        color: "#008BD2", 
+        escudo: "https://i.imgur.com/Z4nykRf.png" 
+    },
+    "gimnasia lp": { 
+        siglas: "GIM", 
+        color: "#193A67", 
+        escudo: "https://i.imgur.com/UYcDpxX.png" 
+    },
+    "gimnasia mendoza": { 
+        siglas: "GYE", 
+        color: "#262626", 
+        escudo: "https://i.imgur.com/9kE1oyP.png" 
+    },
+    "huracan": { 
+        siglas: "HUR", 
+        color: "#A81417", 
+        escudo: "https://i.imgur.com/ft4kqdj.png" 
+    },
+    "independiente": { 
+        siglas: "IND", 
+        color: "#BF0811", 
+        escudo: "https://i.imgur.com/5tYaaXi.png" 
+    },
+    "independiente rivadavia": { 
+        siglas: "IRM", 
+        color: "#2C3064", 
+        escudo: "https://i.imgur.com/aG80jkP.png" 
+    },
+    "instituto": { 
+        siglas: "INS", 
+        color: "#E21B2C", 
+        escudo: "https://i.imgur.com/qHdISrt.png" 
+    },
+    "lanus": { 
+        siglas: "LAN", 
+        color: "#7B202C", 
+        escudo: "https://i.imgur.com/6yIG5B3.png" 
+    },
+    "newells": { 
+        siglas: "NOB", 
+        color: "#BF0811", 
+        escudo: "https://i.imgur.com/XbtSw5L.png" 
+    },
+    "velez": { 
+        siglas: "VEL", 
+        color: "#3562A6", 
+        escudo: "https://i.imgur.com/sOZpFdu.png" 
+    },
+    "riestra": { 
+        siglas: "RIE", 
+        color: "#282828", 
+        escudo: "https://i.imgur.com/RE8WToc.png" 
+    },
+};
+
+function autoCompleteL() {
+    const val = document.getElementById('in-nameL').value.toLowerCase();
+    if(EQUIPOS[val]) {
+        document.getElementById('in-siglasL').value = EQUIPOS[val].siglas;
+        document.getElementById('in-escudoL').value = EQUIPOS[val].escudo;
+        document.documentElement.style.setProperty('--local-bg', EQUIPOS[val].color);
+    }
+    update();
+}
+
+function autoCompleteV() {
+    const val = document.getElementById('in-nameV').value.toLowerCase();
+    if(EQUIPOS[val]) {
+        document.getElementById('in-siglasV').value = EQUIPOS[val].siglas;
+        document.getElementById('in-escudoV').value = EQUIPOS[val].escudo;
+        document.documentElement.style.setProperty('--visit-bg', EQUIPOS[val].color);
+    }
+    update();
+}
+
+/* PROXY CORS PARA IMÁGENES */
+function proxy(url){
+if(!url) return "";
+if(url.includes('placeholder')) return url;
+return url;
+}
+
+function update(){
+
+const fondo = document.getElementById('in-fondo').value ||
+'https://upload.wikimedia.org/wikipedia/commons/8/89/Villa_Park.jpg';
+
+document.getElementById('view-fondo').src = proxy(fondo);
+document.getElementById('view-escudoL').src = proxy(document.getElementById('in-escudoL').value);
+document.getElementById('view-escudoV').src = proxy(document.getElementById('in-escudoV').value);
+
+document.getElementById('view-siglasL').innerText =
+document.getElementById('in-siglasL').value;
+
+document.getElementById('view-siglasV').innerText =
+document.getElementById('in-siglasV').value;
+
+document.getElementById('view-marcador').innerText =
+document.getElementById('in-golesL').value + "-" +
+document.getElementById('in-golesV').value;
+
+document.getElementById('view-torneo').innerText =
+document.getElementById('in-torneo').value.toUpperCase();
+
+document.getElementById('view-estadio').innerText =
+document.getElementById('in-estadio').value.toUpperCase();
+
+document.getElementById('view-golesL').innerHTML =
+document.getElementById('in-golesTextoL').value.replace(/\|/g,"<br>");
+
+document.getElementById('view-golesV').innerHTML =
+document.getElementById('in-golesTextoV').value.replace(/\|/g,"<br>");
+
+}
+
+function esperarImagenes(){
+const imgs=document.querySelectorAll("#post-container img");
+return Promise.all([...imgs].map(img=>{
+if(img.complete) return Promise.resolve();
+return new Promise(res=>{img.onload=img.onerror=res});
+}));
+}
+
+async function descargar() {
+    await esperarImagenes();
+    const post = document.getElementById("post-container");
+
+    html2canvas(post, {
+        useCORS: true,
+        scale: 2,
+        logging: false,
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        windowWidth: 1080,
+        windowHeight: 1350
+    }).then(canvas => {
+        const link = document.createElement("a");
+        
+        // --- Captura de datos ---
+        const local = document.getElementById('in-nameL').value.trim() || "Local";
+        const visita = document.getElementById('in-nameV').value.trim() || "Visita";
+        
+        // Formateo de fecha manual para evitar errores de símbolos según el navegador
+        const hoy = new Date();
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const anio = hoy.getFullYear();
+        const fechaManual = `${dia}-${mes}-${anio}`;
+        
+        // Nombre final: EquipoL_vs_EquipoV_DD-MM-YYYY.png
+        link.download = `${local}_vs_${visita}_${fechaManual}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    });
+}
+
+update()
+
+</script>
+
+</body>
+</html>

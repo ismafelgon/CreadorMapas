@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Zombies FC - Tabla Pro con Zoom</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="competiciones.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+
+        :root { --accent: #2ecc71; }
+        body { margin: 0; background: #111; color: white; font-family: 'Poppins', sans-serif; display: flex; }
+
+        /* --- POST CONTAINER --- */
+        #post-container {
+            width: 1080px; height: 1350px;
+            position: relative; overflow: hidden; background: #000; flex-shrink: 0;
+        }
+
+        #view-fondo {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            background-image: url('https://i.imgur.com/3c8c56b.png');
+            background-repeat: no-repeat;
+            background-size: 100%; /* Se controla por JS */
+            background-position: 50% 50%; 
+            z-index: 1;
+        }
+
+        .side-gradient { position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.82) 35%, rgba(0,0,0,0.6) 60%, transparent 85%); z-index: 2; }
+        .content-layout { position: relative; z-index: 3; width: 100%; height: 100%; display: flex; flex-direction: column; padding: 60px 50px; box-sizing: border-box; }
+
+        .header-section { display: flex; align-items: center; gap: 25px; margin-bottom: 40px; }
+        .comp-color-square { width: 120px; height: 120px; background: var(--accent); display: flex; justify-content: center; align-items: center; }
+        .comp-logo { max-height: 90px; max-width: 90px; }
+
+        .header-text h1 { font-size: 80px; margin: 0; line-height: 0.9; letter-spacing: 2px; }
+        .header-text p { font-size: 32px; margin: 0; color: #ccc }
+
+        .tabla-nba { width: 500px; display: flex; flex-direction: column; gap: 8px; }
+        .fila-nba { display: flex; align-items: center; padding: 0px 15px; height: 60px; background: rgba(255,255,255,0.03); }
+        .pos { width: 40px; font-size: 30px; color: #666; }
+        .escudo-box { width: 60px; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .escudo-box img { max-height: 45px; max-width: 45px; }
+        .team-info { flex-grow: 1; display: flex; align-items: center; margin-left: 15px; }
+        .full-name { font-size: 26px; color: #eee; letter-spacing: 1px; }
+        .stats { width: 80px; text-align: right; font-size: 32px; color: white; }
+
+        /* --- PANEL DE CONTROL --- */
+        .panel { padding: 20px; background: #1a1a1a; width: 450px; height: 100vh; overflow-y: auto; }
+        .input-group { margin-bottom: 15px; padding: 12px; background: #222; border-left: 4px solid var(--accent); }
+        label { display: block; color: var(--accent); font-size: 11px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+        input[type="text"] { width: 100%; padding: 8px; background: #333; border: 1px solid #444; color: white; box-sizing: border-box; margin-bottom: 10px; }
+        input[type="range"] { width: 100%; margin: 10px 0; cursor: pointer; accent-color: var(--accent); }
+        button { width: 100%; padding: 20px; background: var(--accent); border: none; font-weight: bold; cursor: pointer; margin-bottom: 20px; color: #000; }
+    </style>
+</head>
+<body>
+
+<div id="post-container">
+    <div id="view-fondo"></div>
+    <div class="side-gradient"></div>
+    <div class="content-layout">
+        <div class="header-section">
+            <div id="view-comp-square" class="comp-color-square">
+                <img id="view-logo-comp" class="comp-logo" src="https://i.imgur.com/sWqUm1B.png">
+            </div>
+            <div class="header-text">
+                <h1 id="view-titulo">TABLA DE POSICIONES</h1>
+                <p id="view-fecha">TEMPORADA 2026</p>
+            </div>
+        </div>
+        <div class="tabla-nba" id="tabla-body"></div>
+    </div>
+</div>
+
+<div class="panel">
+    <button onclick="descargar()">DESCARGAR TABLA ZOMBIES</button>
+    
+    <div class="input-group">
+        <label>CONFIGURACIÓN GENERAL</label>
+        <input type="text" id="in-titulo" value="LIGA PROFESIONAL" oninput="update()">
+        <input type="text" id="in-fecha" value="FECHA 12" oninput="update()">
+        <input type="text" id="in-fondo" placeholder="URL Imagen de Fondo" oninput="update()">
+    </div>
+
+    <div class="input-group">
+        <label>AJUSTE DE IMAGEN (ZOOM Y POSICIÓN)</label>
+        <label style="color:#888">Zoom: <span id="val-zoom">100</span>%</label>
+        <input type="range" id="in-zoom" min="100" max="300" value="100" oninput="update()">
+        
+        <label style="color:#888">Horizontal (X)</label>
+        <input type="range" id="in-pos-x" min="0" max="100" value="50" oninput="update()">
+        
+        <label style="color:#888">Vertical (Y)</label>
+        <input type="range" id="in-pos-y" min="0" max="100" value="50" oninput="update()">
+    </div>
+
+    <div id="inputs-equipos"></div>
+</div>
+
+<script>
+const EQUIPOS = {
+    "central": { color: "#F3D83E", escudo: "https://i.imgur.com/g2QZOoB.png" },
+    "platense": { color: "#473219", escudo: "https://i.imgur.com/sdHWE4G.png" },
+    "racing": { color: "#009BDB", escudo: "https://i.imgur.com/W60CG4W.png" },
+    "river": { color: "#E2211C", escudo: "https://i.imgur.com/UB6tl2G.png" },
+    "san lorenzo": { color: "#212D4B", escudo: "https://i.imgur.com/iD4h0GV.png" },
+    "boca": { color: "#00438D", escudo: "https://i.imgur.com/q6eUQnN.png" },
+    "independiente": { color: "#BF0811", escudo: "https://i.imgur.com/5tYaaXi.png" },
+    "velez": { color: "#3562A6", escudo: "https://i.imgur.com/sOZpFdu.png" }
+    // ... agrega el resto de equipos aquí
+};
+
+const COMPS = typeof DATOS_COMPETIDORES !== 'undefined' ? DATOS_COMPETIDORES : {};
+
+const inputsContainer = document.getElementById('inputs-equipos');
+const tablaBody = document.getElementById('tabla-body');
+
+// Generar filas
+for (let i = 1; i <= 15; i++) {
+    inputsContainer.innerHTML += `
+        <div class="input-group">
+            <label>POS ${i}</label>
+            <input type="text" id="name-${i}" placeholder="Equipo..." oninput="autoComplete(${i})">
+            <input type="text" id="stats-${i}" placeholder="Puntos" value="0" oninput="update()">
+            <input type="hidden" id="escudo-${i}"><input type="hidden" id="color-${i}">
+        </div>`;
+    tablaBody.innerHTML += `
+        <div class="fila-nba">
+            <div class="pos">${i}</div>
+            <div class="escudo-box" id="box-color-${i}"><img id="view-escudo-${i}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></div>
+            <div class="team-info">
+                <span class="full-name" id="view-name-${i}">-</span>
+            </div>
+            <div class="stats" id="view-stats-${i}">0</div>
+        </div>`;
+}
+
+function autoComplete(id) {
+    const val = document.getElementById(`name-${id}`).value.toLowerCase().trim();
+    if(EQUIPOS[val]) {
+        document.getElementById(`escudo-${id}`).value = EQUIPOS[val].escudo;
+        document.getElementById(`color-${id}`).value = EQUIPOS[val].color;
+    } else {
+        document.getElementById(`escudo-${id}`).value = "";
+        document.getElementById(`color-${id}`).value = "";
+    }
+    update();
+}
+
+function update() {
+    // Textos
+    document.getElementById('view-titulo').innerText = document.getElementById('in-titulo').value.toUpperCase();
+    document.getElementById('view-fecha').innerText = document.getElementById('in-fecha').value.toUpperCase();
+    
+    // Competición lógica (logo y color)
+    const tituloVal = document.getElementById('in-titulo').value.toLowerCase().trim();
+    if(COMPS[tituloVal]) {
+        document.getElementById('view-logo-comp').src = COMPS[tituloVal].logo;
+        document.getElementById('view-comp-square').style.backgroundColor = COMPS[tituloVal].color;
+    }
+
+    // Fondo: Imagen, Posición y Zoom
+    const fondo = document.getElementById('in-fondo').value;
+    const zoom = document.getElementById('in-zoom').value;
+    const posX = document.getElementById('in-pos-x').value;
+    const posY = document.getElementById('in-pos-y').value;
+    
+    document.getElementById('val-zoom').innerText = zoom;
+    const vFondo = document.getElementById('view-fondo');
+    
+    if(fondo) vFondo.style.backgroundImage = `url('${fondo}')`;
+    vFondo.style.backgroundSize = `${zoom}%`;
+    vFondo.style.backgroundPosition = `${posX}% ${posY}%`;
+
+    // Tabla de equipos
+    for (let i = 1; i <= 15; i++) {
+        const name = document.getElementById(`name-${i}`).value || "-";
+        const stats = document.getElementById(`stats-${i}`).value || "0";
+        const escudo = document.getElementById(`escudo-${i}`).value || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+        const color = document.getElementById(`color-${i}`).value || "rgba(255,255,255,0.05)";
+
+        document.getElementById(`view-name-${i}`).innerText = name;
+        document.getElementById(`view-stats-${i}`).innerText = stats;
+        document.getElementById(`view-escudo-${i}`).src = escudo;
+        document.getElementById(`box-color-${i}`).style.backgroundColor = color;
+    }
+}
+
+async function descargar() {
+    const post = document.getElementById("post-container");
+    html2canvas(post, { 
+        useCORS: true, 
+        scale: 2,
+        width: 1080,
+        height: 1350
+    }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = `Tabla_Zombies_${Date.now()}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    });
+}
+
+update();
+</script>
+</body>
+</html>

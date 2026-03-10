@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Creador de mapas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;900&display=swap');
+
+        body { 
+            margin: 0; background: #111; color: white; 
+            font-family: 'Poppins', sans-serif; display: flex; 
+            height: 100vh; overflow: hidden;
+        }
+
+        /* --- POST CONTAINER --- */
+        #post-wrapper {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #1a1a1a;
+        }
+
+        #post-container {
+            width: 1080px; height: 1350px;
+            position: relative; overflow: hidden; 
+            background-color: #AED0E2; 
+            flex-shrink: 0;
+        }
+
+        /* CAPA 1: MAPAS */
+        .mapa { position: absolute; inset: 0; background-color: #AFAFAF; z-index: 1; }
+        #mapa-argentina { -webkit-mask: url('https://i.imgur.com/4OnPi98.png') no-repeat center / contain; mask: url('https://i.imgur.com/4OnPi98.png') no-repeat center / contain; }
+        #mapa-brasil { -webkit-mask: url('https://i.imgur.com/gVY836E.png') no-repeat center / contain; mask: url('https://i.imgur.com/gVY836E.png') no-repeat center / contain; }
+        #mapa-chile { -webkit-mask: url('https://i.imgur.com/4PZF535.png') no-repeat center / contain; mask: url('https://i.imgur.com/4PZF535.png') no-repeat center / contain; }
+        #mapa-uruguay { -webkit-mask: url('https://i.imgur.com/elVtgAk.png') no-repeat center / contain; mask: url('https://i.imgur.com/elVtgAk.png') no-repeat center / contain; }
+        #mapa-paraguay { -webkit-mask: url('https://i.imgur.com/B6yC9ri.png') no-repeat center / contain; mask: url('https://i.imgur.com/B6yC9ri.png') no-repeat center / contain; }
+        #mapa-bolivia { -webkit-mask: url('https://i.imgur.com/caZgllA.png') no-repeat center / contain; mask: url('https://i.imgur.com/caZgllA.png') no-repeat center / contain; }
+        #mapa-peru { -webkit-mask: url('https://i.imgur.com/gCSDu0E.png') no-repeat center / contain; mask: url('https://i.imgur.com/gCSDu0E.png') no-repeat center / contain; }
+        #mapa-colombia { -webkit-mask: url('https://i.imgur.com/67E9nSH.png') no-repeat center / contain; mask: url('https://i.imgur.com/67E9nSH.png') no-repeat center / contain; }
+        #mapa-ecuador { -webkit-mask: url('https://i.imgur.com/qxRVtEN.png') no-repeat center / contain; mask: url('https://i.imgur.com/qxRVtEN.png') no-repeat center / contain; }
+        #mapa-venezuela { -webkit-mask: url('https://i.imgur.com/6mhq3dU.png') no-repeat center / contain; mask: url('https://i.imgur.com/6mhq3dU.png') no-repeat center / contain; }
+        #mapa-guyana { -webkit-mask: url('https://i.imgur.com/1AoSlc6.png') no-repeat center / contain; mask: url('https://i.imgur.com/1AoSlc6.png') no-repeat center / contain; }
+        #mapa-surinam { -webkit-mask: url('https://i.imgur.com/W1Ppfhw.png') no-repeat center / contain; mask: url('https://i.imgur.com/W1Ppfhw.png') no-repeat center / contain; }
+        #mapa-gfrancesa { -webkit-mask: url('https://i.imgur.com/sa55E58.png') no-repeat center / contain; mask: url('https://i.imgur.com/sa55E58.png') no-repeat center / contain; }
+        #mapa-usa { -webkit-mask: url('https://i.imgur.com/l316TCU.png') no-repeat center / contain; mask: url('https://i.imgur.com/l316TCU.png') no-repeat center / contain; }
+        #mapa-canada { -webkit-mask: url('https://i.imgur.com/aj790u9.png') no-repeat center / contain; mask: url('https://i.imgur.com/aj790u9.png') no-repeat center / contain; }
+        #mapa-mexico { -webkit-mask: url('https://i.imgur.com/SkoYilk.png') no-repeat center / contain; mask: url('https://i.imgur.com/SkoYilk.png') no-repeat center / contain; }
+        #mapa-groenlandia { -webkit-mask: url('https://i.imgur.com/9D3Wle1.png') no-repeat center / contain; mask: url('https://i.imgur.com/9D3Wle1.png') no-repeat center / contain; }
+        #mapa-caribe { -webkit-mask: url('https://i.imgur.com/vU6V7cw.png') no-repeat center / contain; mask: url('https://i.imgur.com/vU6V7cw.png') no-repeat center / contain; }
+        
+        /* Mapas Centroamérica */
+        #mapa-guatemala { -webkit-mask: url('https://i.imgur.com/t1tvD5M.png') no-repeat center / contain; mask: url('https://i.imgur.com/t1tvD5M.png') no-repeat center / contain; }
+        #mapa-nicaragua { -webkit-mask: url('https://i.imgur.com/SSvZunG.png') no-repeat center / contain; mask: url('https://i.imgur.com/SSvZunG.png') no-repeat center / contain; }
+        #mapa-elsalvador { -webkit-mask: url('https://i.imgur.com/s8Zn6d8.png') no-repeat center / contain; mask: url('https://i.imgur.com/s8Zn6d8.png') no-repeat center / contain; }
+        #mapa-honduras { -webkit-mask: url('https://i.imgur.com/zm2dUH3.png') no-repeat center / contain; mask: url('https://i.imgur.com/zm2dUH3.png') no-repeat center / contain; }
+        #mapa-costarica { -webkit-mask: url('https://i.imgur.com/o7ZAW32.png') no-repeat center / contain; mask: url('https://i.imgur.com/o7ZAW32.png') no-repeat center / contain; }
+        #mapa-panama { -webkit-mask: url('https://i.imgur.com/dEmovX6.png') no-repeat center / contain; mask: url('https://i.imgur.com/dEmovX6.png') no-repeat center / contain; }
+
+        /* CAPA 2: LOS PINES */
+        .pin-master {
+            position: absolute; top: 50%; left: 50%;
+            display: flex; align-items: center; gap: 15px;
+            transform: translate(-22.5px, -45px);
+            z-index: 5; display: none; pointer-events: none;
+        }
+
+        .pin-svg {
+            width: 45px; height: 45px;
+            filter: drop-shadow(0 4px 15px rgba(0,0,0,1));
+            fill: #D83939; flex-shrink: 0;
+        }
+
+        .contenedor-texto {
+            display: flex; align-items: center; position: relative;
+            filter: drop-shadow(0 4px 15px rgba(0,0,0,1));
+        }
+
+        .contenedor-texto-izq {
+            display: flex; flex-direction: row-reverse; align-items: center; 
+            position: absolute; right: 44px; width: 450px; justify-content: flex-start;
+            filter: drop-shadow(0 4px 15px rgba(0,0,0,1));
+        }
+
+        .etiqueta-nombre {
+            color: #fff; font-size: 23px; white-space: nowrap;
+            font-weight: normal;
+        }
+
+        .etiqueta-nombre-izq {
+            color: #fff; font-size: 23px; white-space: nowrap;
+            text-align: right; flex-grow: 1; font-weight: normal;
+        }
+
+        .overlay-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; z-index: 4; pointer-events: none}
+
+        /* --- PANEL --- */
+        .panel { width: 420px; background: #000; padding: 30px; border-left: 2px solid #333; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        label { font-size: 10px; color: #2ecc71; text-transform: uppercase; }
+        input[type="text"], input[type="color"] { padding: 8px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 4px; width: 100%; }
+        input[type="color"] { height: 40px; border: none; padding: 0;}
+        .btn-pin { padding: 10px; border: none; background: black; color: white; font-size: 20px; cursor: pointer; border-radius: 4px; }
+        .btn-pin.active { background: #e74c3c; border-color: #ff7675; }
+        .btn-descargar { background: #2ecc71; color: black; border: none; padding: 15px; font-weight: 900; cursor: pointer; border-radius: 4px; margin-top: 10px; }
+        .row-ctrl { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="post-wrapper">
+    <div id="post-container" onclick="manejarClick(event)">
+        <div id="mapa-argentina" class="mapa"></div>
+        <div id="mapa-brasil" class="mapa"></div>
+        <div id="mapa-chile" class="mapa"></div>
+        <div id="mapa-uruguay" class="mapa"></div>
+        <div id="mapa-paraguay" class="mapa"></div>
+        <div id="mapa-bolivia" class="mapa"></div>
+        <div id="mapa-peru" class="mapa"></div>
+        <div id="mapa-colombia" class="mapa"></div>
+        <div id="mapa-ecuador" class="mapa"></div>
+        <div id="mapa-venezuela" class="mapa"></div>
+        <div id="mapa-guyana" class="mapa"></div>
+        <div id="mapa-surinam" class="mapa"></div>
+        <div id="mapa-gfrancesa" class="mapa"></div>
+        <div id="mapa-usa" class="mapa"></div>
+        <div id="mapa-canada" class="mapa"></div>
+        <div id="mapa-mexico" class="mapa"></div>
+        <div id="mapa-groenlandia" class="mapa"></div>
+        <div id="mapa-guatemala" class="mapa"></div>
+        <div id="mapa-nicaragua" class="mapa"></div>
+        <div id="mapa-elsalvador" class="mapa"></div>
+        <div id="mapa-honduras" class="mapa"></div>
+        <div id="mapa-costarica" class="mapa"></div>
+        <div id="mapa-panama" class="mapa"></div>
+        <div id="mapa-caribe" class="mapa"></div>
+
+        <div id="pin-arg" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto-izq"><img src="https://i.imgur.com/zHLkbr0.png" style="width:30px;height:auto;margin-left:10px"><div id="txt-arg" class="etiqueta-nombre-izq">UBICACIÓN</div></div></div>
+        <div id="pin-chi" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto-izq"><img src="https://i.imgur.com/LQ7gEbn.png" style="width:30px;height:auto;margin-left:10px"><div id="txt-chi" class="etiqueta-nombre-izq">UBICACIÓN</div></div></div>
+        <div id="pin-par" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto-izq"><img src="https://i.imgur.com/dN86dOm.png" style="width:30px;height:auto;margin-left:10px"><div id="txt-par" class="etiqueta-nombre-izq">UBICACIÓN</div></div></div>
+        <div id="pin-bol" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto-izq"><img src="https://i.imgur.com/yvPaQiX.png" style="width:30px;height:auto;margin-left:10px"><div id="txt-bol" class="etiqueta-nombre-izq">UBICACIÓN</div></div></div>
+        <div id="pin-per" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto-izq"><img src="https://i.imgur.com/e9DRUDe.png" style="width:30px;height:auto;margin-left:10px"><div id="txt-per" class="etiqueta-nombre-izq">UBICACIÓN</div></div></div>
+        <div id="pin-col" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto-izq"><img src="https://i.imgur.com/IaDjys8.png" style="width:30px;height:auto;margin-left:10px"><div id="txt-col" class="etiqueta-nombre-izq">UBICACIÓN</div></div></div>
+        <div id="pin-ecu" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto-izq"><img src="https://i.imgur.com/qwhGIkw.png" style="width:30px;height:auto;margin-left:10px"><div id="txt-ecu" class="etiqueta-nombre-izq">UBICACIÓN</div></div></div>
+        <div id="pin-ven" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto-izq"><img src="https://i.imgur.com/6OPNUYa.png" style="width:30px;height:auto;margin-left:10px;"><div id="txt-ven" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+
+        <div id="pin-bra" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto"><img src="https://i.imgur.com/vydhaEG.png" style="width:30px;height:auto;margin-left:-15px; margin-right:5px;"><div id="txt-bra" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+        <div id="pin-uru" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto"><img src="https://i.imgur.com/2VJed6D.png" style="width:30px;height:auto;margin-left:-15px; margin-right:5px;"><div id="txt-uru" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+        <div id="pin-guy" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto"><img src="https://i.imgur.com/Ui59eYA.png" style="width:30px;height:auto;margin-left:-15px; margin-right:5px;"><div id="txt-guy" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+        <div id="pin-sur" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto"><img src="https://i.imgur.com/sGEq4Yz.png" style="width:30px;height:auto;margin-left:-15px; margin-right:5px;"><div id="txt-sur" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+        <div id="pin-usa" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto"><img src="https://i.imgur.com/fyOSBmS.png" style="width:30px;height:auto;margin-left:-15px; margin-right:5px;"><div id="txt-usa" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+        <div id="pin-can" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto"><img src="https://i.imgur.com/UHZO581.png" style="width:30px;height:auto;margin-left:-15px; margin-right:5px;"><div id="txt-can" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+        <div id="pin-mex" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto"><img src="https://i.imgur.com/q8kecW3.png" style="width:30px;height:auto;margin-left:-15px; margin-right:5px;"><div id="txt-mex" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+
+        <div id="pin-gua" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto-izq"><img src="https://i.imgur.com/6puy1Vw.png" style="width:30px;height:auto;margin-left:10px; margin-right:5px;"><div id="txt-gua" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+        <div id="pin-nic" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto"><img src="https://i.imgur.com/uQZlcEp.png" style="width:30px;height:auto;margin-left:-15px; margin-right:5px;"><div id="txt-nic" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+        <div id="pin-sal" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto-izq"><img src="https://i.imgur.com/lxJQXkS.png" style="width:30px;height:auto;margin-left:10px; margin-right:5px;"><div id="txt-sal" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+        <div id="pin-hon" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto"><img src="https://i.imgur.com/Hqu7orV.png" style="width:30px;height:auto;margin-left:-15px; margin-right:5px;"><div id="txt-hon" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+        <div id="pin-cri" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto-izq"><img src="https://i.imgur.com/oybBezD.png" style="width:30px;height:auto;margin-left:10px; margin-right:5px;"><div id="txt-cri" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+        <div id="pin-pan" class="pin-master"><svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><div class="contenedor-texto"><img src="https://i.imgur.com/udy3Y11.png" style="width:30px;height:auto;margin-left:-15px; margin-right:5px;"><div id="txt-pan" class="etiqueta-nombre">UBICACIÓN</div></div></div>
+
+        <img class="overlay-img" src="https://i.imgur.com/QDtjbbr.png">
+    </div>
+</div>
+
+<div class="panel" id="panel-controles">
+    <h1 style="color:white; margin:0; font-size: 18px;">PERSONALIZAR</h1>
+</div>
+
+<script>
+    const paisesConfig = [
+        { id: 'can', nombre: 'Canadá', flag: 'https://i.imgur.com/UHZO581.png', mapa: 'mapa-canada' },
+        { id: 'usa', nombre: 'Estados Unidos', flag: 'https://i.imgur.com/fyOSBmS.png', mapa: 'mapa-usa' },
+        { id: 'mex', nombre: 'México', flag: 'https://i.imgur.com/q8kecW3.png', mapa: 'mapa-mexico' },
+        // Centroamérica
+        { id: 'gua', nombre: 'Guatemala', flag: 'https://i.imgur.com/6puy1Vw.png', mapa: 'mapa-guatemala' },
+        { id: 'sal', nombre: 'El Salvador', flag: 'https://i.imgur.com/lxJQXkS.png', mapa: 'mapa-elsalvador' },
+        { id: 'hon', nombre: 'Honduras', flag: 'https://i.imgur.com/Hqu7orV.png', mapa: 'mapa-honduras' },
+        { id: 'nic', nombre: 'Nicaragua', flag: 'https://i.imgur.com/uQZlcEp.png', mapa: 'mapa-nicaragua' },
+        { id: 'cri', nombre: 'Costa Rica', flag: 'https://i.imgur.com/oybBezD.png', mapa: 'mapa-costarica' },
+        { id: 'pan', nombre: 'Panamá', flag: 'https://i.imgur.com/udy3Y11.png', mapa: 'mapa-panama' },
+        // Suramérica
+        { id: 'col', nombre: 'Colombia', flag: 'https://i.imgur.com/IaDjys8.png', mapa: 'mapa-colombia' },
+        { id: 'ven', nombre: 'Venezuela', flag: 'https://i.imgur.com/6OPNUYa.png', mapa: 'mapa-venezuela' },
+        { id: 'guy', nombre: 'Guyana', flag: 'https://i.imgur.com/Ui59eYA.png', mapa: 'mapa-guyana' },
+        { id: 'sur', nombre: 'Surinam', flag: 'https://i.imgur.com/sGEq4Yz.png', mapa: 'mapa-surinam' },
+        { id: 'ecu', nombre: 'Ecuador', flag: 'https://i.imgur.com/qwhGIkw.png', mapa: 'mapa-ecuador' },
+        { id: 'per', nombre: 'Perú', flag: 'https://i.imgur.com/e9DRUDe.png', mapa: 'mapa-peru' },
+        { id: 'bol', nombre: 'Bolivia', flag: 'https://i.imgur.com/yvPaQiX.png', mapa: 'mapa-bolivia' },
+        { id: 'par', nombre: 'Paraguay', flag: 'https://i.imgur.com/dN86dOm.png', mapa: 'mapa-paraguay' },
+        { id: 'bra', nombre: 'Brasil', flag: 'https://i.imgur.com/vydhaEG.png', mapa: 'mapa-brasil' },
+        { id: 'chi', nombre: 'Chile', flag: 'https://i.imgur.com/LQ7gEbn.png', mapa: 'mapa-chile' },
+        { id: 'arg', nombre: 'Argentina', flag: 'https://i.imgur.com/zHLkbr0.png', mapa: 'mapa-argentina' },
+        { id: 'uru', nombre: 'Uruguay', flag: 'https://i.imgur.com/2VJed6D.png', mapa: 'mapa-uruguay' }
+    ];
+
+    let currentPinMode = null;
+
+    function initPanel() {
+        const panel = document.getElementById('panel-controles');
+        paisesConfig.forEach(p => {
+            const group = document.createElement('div');
+            group.className = 'input-group';
+            group.innerHTML = `
+                <div class="row-ctrl">
+                    <img src="${p.flag}" style="width:25px;height:auto">
+                    <label style="font-size:16px; flex-grow:1; margin-left:10px">${p.nombre}</label>
+                    <input type="text" id="in-txt-${p.id}" placeholder="Nombre..." oninput="actualizar()" style="border:none;background-color:black;width:200px;font-size:20px;color:white;">
+                    <button id="btn-pin-${p.id}" class="btn-pin" onclick="setPinMode('${p.id}')">📍</button>
+                </div>
+                <input type="color" id="color-${p.id}" value="#FFFFFF" oninput="actualizar()">
+            `;
+            panel.appendChild(group);
+        });
+        
+        const btnDesc = document.createElement('button');
+        btnDesc.className = 'btn-descargar';
+        btnDesc.innerText = 'Descargar Post';
+        btnDesc.onclick = descargar;
+        panel.appendChild(btnDesc);
+    }
+
+    function setPinMode(id) {
+        currentPinMode = (currentPinMode === id) ? null : id;
+        document.querySelectorAll('.btn-pin').forEach(b => b.classList.remove('active'));
+        if(currentPinMode) document.getElementById('btn-pin-' + currentPinMode).classList.add('active');
+    }
+
+    function manejarClick(e) {
+        if (!currentPinMode) return;
+        const container = document.getElementById('post-container');
+        const rect = container.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+        const pin = document.getElementById('pin-' + currentPinMode);
+        if(pin) {
+            pin.style.left = x + "%";
+            pin.style.top = y + "%";
+            pin.style.display = "flex";
+        }
+    }
+
+    function actualizar() {
+        paisesConfig.forEach(p => {
+            const colorInput = document.getElementById('color-' + p.id);
+            const textInput = document.getElementById('in-txt-' + p.id);
+            
+            if(colorInput) {
+                const mapaElement = document.getElementById(p.mapa);
+                if(mapaElement) mapaElement.style.backgroundColor = colorInput.value;
+            }
+            
+            if(textInput) {
+                const label = document.getElementById('txt-' + p.id);
+                if(label && textInput.value.trim()) label.innerText = textInput.value;
+            }
+        });
+    }
+
+    function descargar() {
+        html2canvas(document.getElementById('post-container'), { scale: 2, useCORS: true }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `Mapa_Paises.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    }
+
+    initPanel();
+    actualizar();
+</script>
+
+</body>
+</html>

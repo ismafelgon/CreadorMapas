@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Creador de Mapas de Calor - Zombies</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;900&display=swap');
+
+        body { 
+            margin: 0; background: #111; color: white; 
+            font-family: 'Poppins', sans-serif; display: flex; 
+            height: 100vh; overflow: hidden;
+        }
+
+        #post-wrapper {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #1a1a1a;
+        }
+
+        #post-container {
+            width: 1080px; height: 1350px;
+            position: relative; overflow: hidden; 
+            background-color: #AED0E2; 
+            flex-shrink: 0;
+        }
+
+        /* CAPA 1: MAPAS (Visualización en navegador) */
+        .mapa { position: absolute; inset: 0; background-color: #AFAFAF; z-index: 1; transition: background-color 0.3s; }
+        #mapa-argentina { -webkit-mask: url('https://i.imgur.com/4OnPi98.png') no-repeat center / contain; mask: url('https://i.imgur.com/4OnPi98.png') no-repeat center / contain; }
+        #mapa-brasil { -webkit-mask: url('https://i.imgur.com/gVY836E.png') no-repeat center / contain; mask: url('https://i.imgur.com/gVY836E.png') no-repeat center / contain; }
+        #mapa-chile { -webkit-mask: url('https://i.imgur.com/4PZF535.png') no-repeat center / contain; mask: url('https://i.imgur.com/4PZF535.png') no-repeat center / contain; }
+        #mapa-uruguay { -webkit-mask: url('https://i.imgur.com/elVtgAk.png') no-repeat center / contain; mask: url('https://i.imgur.com/elVtgAk.png') no-repeat center / contain; }
+        #mapa-paraguay { -webkit-mask: url('https://i.imgur.com/B6yC9ri.png') no-repeat center / contain; mask: url('https://i.imgur.com/B6yC9ri.png') no-repeat center / contain; }
+        #mapa-bolivia { -webkit-mask: url('https://i.imgur.com/caZgllA.png') no-repeat center / contain; mask: url('https://i.imgur.com/caZgllA.png') no-repeat center / contain; }
+        #mapa-peru { -webkit-mask: url('https://i.imgur.com/gCSDu0E.png') no-repeat center / contain; mask: url('https://i.imgur.com/gCSDu0E.png') no-repeat center / contain; }
+        #mapa-colombia { -webkit-mask: url('https://i.imgur.com/67E9nSH.png') no-repeat center / contain; mask: url('https://i.imgur.com/67E9nSH.png') no-repeat center / contain; }
+        #mapa-ecuador { -webkit-mask: url('https://i.imgur.com/qxRVtEN.png') no-repeat center / contain; mask: url('https://i.imgur.com/qxRVtEN.png') no-repeat center / contain; }
+        #mapa-venezuela { -webkit-mask: url('https://i.imgur.com/6mhq3dU.png') no-repeat center / contain; mask: url('https://i.imgur.com/6mhq3dU.png') no-repeat center / contain; }
+        #mapa-usa { -webkit-mask: url('https://i.imgur.com/l316TCU.png') no-repeat center / contain; mask: url('https://i.imgur.com/l316TCU.png') no-repeat center / contain; }
+        #mapa-canada { -webkit-mask: url('https://i.imgur.com/aj790u9.png') no-repeat center / contain; mask: url('https://i.imgur.com/aj790u9.png') no-repeat center / contain; }
+        #mapa-mexico { -webkit-mask: url('https://i.imgur.com/SkoYilk.png') no-repeat center / contain; mask: url('https://i.imgur.com/SkoYilk.png') no-repeat center / contain; }
+        #mapa-guatemala { -webkit-mask: url('https://i.imgur.com/t1tvD5M.png') no-repeat center / contain; mask: url('https://i.imgur.com/t1tvD5M.png') no-repeat center / contain; }
+        #mapa-nicaragua { -webkit-mask: url('https://i.imgur.com/SSvZunG.png') no-repeat center / contain; mask: url('https://i.imgur.com/SSvZunG.png') no-repeat center / contain; }
+        #mapa-elsalvador { -webkit-mask: url('https://i.imgur.com/s8Zn6d8.png') no-repeat center / contain; mask: url('https://i.imgur.com/s8Zn6d8.png') no-repeat center / contain; }
+        #mapa-honduras { -webkit-mask: url('https://i.imgur.com/zm2dUH3.png') no-repeat center / contain; mask: url('https://i.imgur.com/zm2dUH3.png') no-repeat center / contain; }
+        #mapa-costarica { -webkit-mask: url('https://i.imgur.com/o7ZAW32.png') no-repeat center / contain; mask: url('https://i.imgur.com/o7ZAW32.png') no-repeat center / contain; }
+        #mapa-panama { -webkit-mask: url('https://i.imgur.com/dEmovX6.png') no-repeat center / contain; mask: url('https://i.imgur.com/dEmovX6.png') no-repeat center / contain; }
+
+        .valor-mapa {
+            position: absolute; z-index: 5; font-weight: 500; font-size: 37px;
+            color: black; pointer-events: none; display: none; transform: translate(-50%, -50%);
+        }
+
+        .pin-master {
+            position: absolute; display: none; align-items: center; gap: 10px;
+            transform: translate(-22.5px, -45px); z-index: 10; pointer-events: none;
+        }
+        .pin-svg { width: 45px; height: 45px; fill: #D83939; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8)); flex-shrink: 0; }
+        .contenedor-texto { display: flex; align-items: center; filter: drop-shadow(0 4px 10px rgba(0,0,0,1)); }
+        .etiqueta-nombre { color: #fff; font-size: 23px; white-space: nowrap; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .flag-pin { width: 35px; height: auto; border-radius: 3px; }
+
+        .mapa-estatico { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; z-index: 2; pointer-events: none; }
+        .overlay-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; z-index: 4; pointer-events: none; transform: translateX(1px); }
+
+        /* PANEL */
+        .panel { width: 420px; background: #000; padding: 25px; border-left: 2px solid #333; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+        .config-calor { background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #2ecc71; margin-bottom: 10px; }
+        .row-ctrl { display: flex; align-items: center; gap: 8px; background: #111; padding: 8px; border-radius: 6px; margin-bottom: 5px; }
+        .row-ctrl img { width: 25px; }
+        .row-ctrl span { flex-grow: 1; font-size: 13px; font-weight: 900; }
+        input[type="number"], input[type="text"] { padding: 5px; background: #000; border: 1px solid #444; color: white; border-radius: 4px; }
+        .btn-pin { padding: 5px 10px; cursor: pointer; background: #333; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; }
+        .btn-pin.active { background: #e74c3c; }
+        .btn-descargar { background: #2ecc71; color: black; border: none; padding: 15px; font-weight: 900; cursor: pointer; border-radius: 4px; margin-top: 10px; }
+        
+        /* Canvas para renderizado de descarga */
+        #canvas-render { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="post-wrapper">
+    <div id="post-container" onclick="colocarPin(event)">
+        <canvas id="canvas-render"></canvas>
+        <div id="mapas-container">
+            <div id="mapa-argentina" class="mapa"></div>
+            <div id="mapa-brasil" class="mapa"></div>
+            <div id="mapa-chile" class="mapa"></div>
+            <div id="mapa-uruguay" class="mapa"></div>
+            <div id="mapa-paraguay" class="mapa"></div>
+            <div id="mapa-bolivia" class="mapa"></div>
+            <div id="mapa-peru" class="mapa"></div>
+            <div id="mapa-colombia" class="mapa"></div>
+            <div id="mapa-ecuador" class="mapa"></div>
+            <div id="mapa-venezuela" class="mapa"></div>
+            <div id="mapa-usa" class="mapa"></div>
+            <div id="mapa-canada" class="mapa"></div>
+            <div id="mapa-mexico" class="mapa"></div>
+            <div id="mapa-guatemala" class="mapa"></div>
+            <div id="mapa-nicaragua" class="mapa"></div>
+            <div id="mapa-elsalvador" class="mapa"></div>
+            <div id="mapa-honduras" class="mapa"></div>
+            <div id="mapa-costarica" class="mapa"></div>
+            <div id="mapa-panama" class="mapa"></div>
+        </div>
+
+        <div id="valores-layer"></div> 
+        <img src="https://i.imgur.com/Kx0f6Qs.png" class="mapa-estatico" crossorigin="anonymous">
+        <div id="pines-layer"></div>
+        <img class="overlay-img" src="https://i.imgur.com/6uM66BE.png" crossorigin="anonymous">
+    </div>
+</div>
+
+<div class="panel">
+    <h2 style="color: #2ecc71; margin: 0; font-size: 18px;">RANGO DE CALOR</h2>
+    <div class="config-calor">
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="flex:1">
+                <label style="font-size:9px; color:#aaa">MÍN</label>
+                <input type="number" id="val-min" value="0" oninput="actualizar()">
+                <input type="color" id="col-min" value="#FFFFFF" oninput="actualizar()" style="width:100%; height:25px; margin-top:5px; padding:0; border:none">
+            </div>
+            <div style="flex:1">
+                <label style="font-size:9px; color:#aaa">MÁX</label>
+                <input type="number" id="val-max" value="100" oninput="actualizar()">
+                <input type="color" id="col-max" value="#D83939" oninput="actualizar()" style="width:100%; height:25px; margin-top:5px; padding:0; border:none">
+            </div>
+        </div>
+    </div>
+
+    <div id="lista-paises"></div>
+    <button class="btn-descargar" onclick="descargar()">DESCARGAR IMAGEN</button>
+</div>
+
+<script>
+    const paises = [
+        { id: 'can', nombre: 'Canadá', flag: 'https://i.imgur.com/UHZO581.png', mapa: 'mapa-canada', x: 37, y: 31, mask: 'https://i.imgur.com/aj790u9.png' },
+        { id: 'usa', nombre: 'USA', flag: 'https://i.imgur.com/fyOSBmS.png', mapa: 'mapa-usa', x: 39, y: 44.5, mask: 'https://i.imgur.com/l316TCU.png' },
+        { id: 'mex', nombre: 'México', flag: 'https://i.imgur.com/q8kecW3.png', mapa: 'mapa-mexico', x: 36.3, y: 53.2, mask: 'https://i.imgur.com/SkoYilk.png' },
+        { id: 'gua', nombre: 'Guatemala', flag: 'https://i.imgur.com/6puy1Vw.png', mapa: 'mapa-guatemala', x: 70.18, y: 50.3, mask: 'https://i.imgur.com/t1tvD5M.png' },
+        { id: 'sal', nombre: 'El Salvador', flag: 'https://i.imgur.com/lxJQXkS.png', mapa: 'mapa-elsalvador', x: 72.3, y: 53.3, mask: 'https://i.imgur.com/s8Zn6d8.png' },
+        { id: 'hon', nombre: 'Honduras', flag: 'https://i.imgur.com/Hqu7orV.png', mapa: 'mapa-honduras', x: 75.2, y: 51.3, mask: 'https://i.imgur.com/zm2dUH3.png' },
+        { id: 'nic', nombre: 'Nicaragua', flag: 'https://i.imgur.com/uQZlcEp.png', mapa: 'mapa-nicaragua', x: 77, y: 53.8, mask: 'https://i.imgur.com/SSvZunG.png' },
+        { id: 'cri', nombre: 'Costa Rica', flag: 'https://i.imgur.com/oybBezD.png', mapa: 'mapa-costarica', x: 78.2, y: 57.1, mask: 'https://i.imgur.com/o7ZAW32.png' },
+        { id: 'pan', nombre: 'Panamá', flag: 'https://i.imgur.com/udy3Y11.png', mapa: 'mapa-panama', x: 83.7, y: 58.5, mask: 'https://i.imgur.com/dEmovX6.png' },
+        { id: 'col', nombre: 'Colombia', flag: 'https://i.imgur.com/IaDjys8.png', mapa: 'mapa-colombia', x: 52.3, y: 61.3, mask: 'https://i.imgur.com/67E9nSH.png' },
+        { id: 'ven', nombre: 'Venezuela', flag: 'https://i.imgur.com/6OPNUYa.png', mapa: 'mapa-venezuela', x: 56.3, y: 59.9, mask: 'https://i.imgur.com/6mhq3dU.png' },
+        { id: 'ecu', nombre: 'Ecuador', flag: 'https://i.imgur.com/qwhGIkw.png', mapa: 'mapa-ecuador', x: 49.2, y: 63.5, mask: 'https://i.imgur.com/qxRVtEN.png' },
+        { id: 'per', nombre: 'Perú', flag: 'https://i.imgur.com/e9DRUDe.png', mapa: 'mapa-peru', x: 51.3, y: 67.4, mask: 'https://i.imgur.com/gCSDu0E.png' },
+        { id: 'bol', nombre: 'Bolivia', flag: 'https://i.imgur.com/yvPaQiX.png', mapa: 'mapa-bolivia', x: 57.3, y: 70, mask: 'https://i.imgur.com/caZgllA.png' },
+        { id: 'bra', nombre: 'Brasil', flag: 'https://i.imgur.com/vydhaEG.png', mapa: 'mapa-brasil', x: 65, y: 68, mask: 'https://i.imgur.com/gVY836E.png' },
+        { id: 'par', nombre: 'Paraguay', flag: 'https://i.imgur.com/dN86dOm.png', mapa: 'mapa-paraguay', x: 61.1, y: 72.8, mask: 'https://i.imgur.com/B6yC9ri.png' },
+        { id: 'chi', nombre: 'Chile', flag: 'https://i.imgur.com/LQ7gEbn.png', mapa: 'mapa-chile', x: 52.5, y: 81, mask: 'https://i.imgur.com/4PZF535.png' },
+        { id: 'arg', nombre: 'Argentina', flag: 'https://i.imgur.com/zHLkbr0.png', mapa: 'mapa-argentina', x: 58.5, y: 77.5, mask: 'https://i.imgur.com/4OnPi98.png' },
+        { id: 'uru', nombre: 'Uruguay', flag: 'https://i.imgur.com/2VJed6D.png', mapa: 'mapa-uruguay', x: 63.05, y: 77.1, mask: 'https://i.imgur.com/elVtgAk.png' }
+    ];
+
+    let modoActivo = null;
+    let ladoActivo = 'derecha';
+
+    function init() {
+        const lista = document.getElementById('lista-paises');
+        const pinesCont = document.getElementById('pines-layer');
+        const valoresCont = document.getElementById('valores-layer');
+        const grandes = ['usa', 'can', 'arg', 'bra', 'mex'];
+        const muyChicos = ['uru', 'ecu', 'par', 'sal', 'cri'];
+
+        paises.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'row-ctrl';
+            div.innerHTML = `
+                <img src="${p.flag}">
+                <span>${p.nombre}</span>
+                <input type="number" id="val-${p.id}" placeholder="Val" oninput="actualizar()" style="width:50px">
+                <input type="text" id="txt-${p.id}" placeholder="Texto..." oninput="actualizar()" style="width:70px">
+                <button class="btn-pin" id="btn-L-${p.id}" onclick="setModo('${p.id}', 'izquierda')">L</button>
+                <button class="btn-pin" id="btn-R-${p.id}" onclick="setModo('${p.id}', 'derecha')">R</button>
+            `;
+            lista.appendChild(div);
+
+            const vTxt = document.createElement('div');
+            vTxt.id = `map-val-${p.id}`;
+            vTxt.className = 'valor-mapa';
+            vTxt.style.left = p.x + "%";
+            vTxt.style.top = p.y + "%";
+            if (muyChicos.includes(p.id)) vTxt.style.fontSize = "25px";
+            else if (!grandes.includes(p.id)) vTxt.style.fontSize = "30px";
+            valoresCont.appendChild(vTxt);
+
+            const pin = document.createElement('div');
+            pin.id = `pin-${p.id}`;
+            pin.className = 'pin-master derecha';
+            pin.innerHTML = `
+                <svg class="pin-svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                <div class="contenedor-texto">
+                    <img src="${p.flag}" class="flag-pin" id="flag-${p.id}" crossorigin="anonymous">
+                    <div class="etiqueta-nombre" id="lbl-${p.id}">UBICACIÓN</div>
+                </div>
+            `;
+            pinesCont.appendChild(pin);
+        });
+    }
+
+    function setModo(id, lado) {
+        modoActivo = id; ladoActivo = lado;
+        document.querySelectorAll('.btn-pin').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-${lado === 'izquierda' ? 'L' : 'R'}-${id}`).classList.add('active');
+    }
+
+    function colocarPin(e) {
+        if (!modoActivo) return;
+        const container = document.getElementById('post-container');
+        const rect = container.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        const pin = document.getElementById(`pin-${modoActivo}`);
+        pin.style.left = x + "%"; pin.style.top = y + "%"; pin.style.display = "flex";
+        pin.className = `pin-master ${ladoActivo}`;
+        const flag = document.getElementById(`flag-${modoActivo}`);
+        flag.style.margin = (ladoActivo === 'derecha') ? "0 8px 0 -10px" : "0 -10px 0 8px";
+        modoActivo = null;
+        document.querySelectorAll('.btn-pin').forEach(b => b.classList.remove('active'));
+    }
+
+    function interpolateColor(c1, c2, f) {
+        const r1 = parseInt(c1.substring(1,3), 16), g1 = parseInt(c1.substring(3,5), 16), b1 = parseInt(c1.substring(5,7), 16);
+        const r2 = parseInt(c2.substring(1,3), 16), g2 = parseInt(c2.substring(3,5), 16), b2 = parseInt(c2.substring(5,7), 16);
+        const r = Math.round(r1 + f * (r2 - r1)), g = Math.round(g1 + f * (g2 - g1)), b = Math.round(b1 + f * (b2 - b1));
+        const hex = (x) => x.toString(16).padStart(2, '0');
+        return `#${hex(r)}${hex(g)}${hex(b)}`;
+    }
+
+    function actualizar() {
+        const minV = parseFloat(document.getElementById('val-min').value) || 0;
+        const maxV = parseFloat(document.getElementById('val-max').value) || 100;
+        const minC = document.getElementById('col-min').value;
+        const maxC = document.getElementById('col-max').value;
+
+        paises.forEach(p => {
+            const valIn = document.getElementById(`val-${p.id}`);
+            const txtIn = document.getElementById(`txt-${p.id}`);
+            const mapa = document.getElementById(p.mapa);
+            const label = document.getElementById(`lbl-${p.id}`);
+            const mapValTxt = document.getElementById(`map-val-${p.id}`);
+
+            if (valIn.value !== "") {
+                const factor = Math.max(0, Math.min(1, (parseFloat(valIn.value) - minV) / (maxV - minV)));
+                mapa.style.backgroundColor = interpolateColor(minC, maxC, factor);
+                mapValTxt.innerText = valIn.value;
+                mapValTxt.style.display = "block";
+            } else {
+                mapa.style.backgroundColor = "#AFAFAF";
+                mapValTxt.style.display = "none";
+            }
+            label.innerText = txtIn.value !== "" ? txtIn.value : p.nombre.toUpperCase();
+        });
+    }
+
+    async function descargar(){
+        const container = document.getElementById("post-container");
+        const canvasRender = document.getElementById("canvas-render");
+        const ctx = canvasRender.getContext("2d");
+        
+        canvasRender.width = 1080;
+        canvasRender.height = 1350;
+        canvasRender.style.display = "block";
+
+        // 1. Limpiar canvas
+        ctx.clearRect(0, 0, 1080, 1350);
+
+        // 2. Renderizar cada país manualmente usando su máscara
+        const promesas = paises.map(p => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.src = p.mask;
+                img.onload = () => {
+                    const color = document.getElementById(p.mapa).style.backgroundColor || "rgb(175, 175, 175)";
+                    
+                    // Buffer temporal para cada país
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = 1080;
+                    tempCanvas.height = 1350;
+                    const tempCtx = tempCanvas.getContext('2d');
+
+                    // Dibujar máscara
+                    tempCtx.drawImage(img, 0, 0, 1080, 1350);
+                    // Aplicar color solo donde hay máscara
+                    tempCtx.globalCompositeOperation = 'source-in';
+                    tempCtx.fillStyle = color;
+                    tempCtx.fillRect(0, 0, 1080, 1350);
+
+                    // Dibujar el país procesado en el canvas principal
+                    ctx.drawImage(tempCanvas, 0, 0);
+                    resolve();
+                };
+                img.onerror = resolve;
+            });
+        });
+
+        await Promise.all(promesas);
+
+        // 3. Ocultar los mapas CSS para que no estorben a html2canvas
+        document.getElementById("mapas-container").style.opacity = "0";
+
+        // 4. Captura final
+        html2canvas(container, {
+            useCORS: true,
+            scale: 2,
+            backgroundColor: "#AED0E2"
+        }).then(canvas => {
+            const link = document.createElement("a");
+            link.download = `Mapa_Calor_Zombies_${Date.now()}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+            
+            // Restaurar visualización
+            canvasRender.style.display = "none";
+            document.getElementById("mapas-container").style.opacity = "1";
+        });
+    }
+
+    init();
+</script>
+
+</body>
+</html>

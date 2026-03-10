@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Creador de Mapas de Calor - Zombies</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700;900&display=swap');
+
+        body { 
+            margin: 0; background: #111; color: white; 
+            font-family: 'Poppins', sans-serif; display: flex; 
+            height: 100vh; overflow: hidden;
+        }
+
+        #post-wrapper {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #1a1a1a;
+        }
+
+        #post-container {
+            width: 1080px; height: 1350px;
+            position: relative; overflow: hidden; 
+            background-color: #AED0E2; 
+            flex-shrink: 0;
+            transform: translateZ(0); 
+        }
+
+        /* TEXTOS */
+        #info-fuente {
+            position: absolute; top: 25px; right: 25px; z-index: 10;
+            color: rgba(0,0,0,0.6); font-size: 25px; text-transform: uppercase; font-weight: 400;
+        }
+
+        #contenedor-titulos {
+            position: absolute; top: 60px; left: 0; right: 0; z-index: 10; 
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            pointer-events: none; padding: 0 50px;
+        }
+
+        #mapa-titulo {
+            color: #000; font-size: 45px; font-weight: 900; line-height: 1.1; 
+            margin-top: 700px; margin-left: 560px; text-transform: uppercase; white-space: pre-line;
+        }
+
+        #mapa-bajada {
+            color: #333; font-size: 26px; margin-left: 560px; font-weight: 400; line-height: 1.2; max-width: 800px;
+        }
+
+        /* CAPAS MAPA */
+        .mapa { 
+            position: absolute; inset: 0; width: 100%; height: 100%; 
+            background-color: #AFAFAF; z-index: 1; 
+            -webkit-mask-size: 100% 100% !important; mask-size: 100% 100% !important;
+            -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+        }
+
+        /* IMÁGENES DINÁMICAS SOBRE EL MAPA */
+        .img-mapa {
+            position: absolute; z-index: 5; transform: translate(-50%, -50%);
+            display: none; object-fit: contain; pointer-events: none;
+        }
+
+        /* Máscaras */
+        #mapa-juj { -webkit-mask: url('https://i.imgur.com/QxghkRK.png'); mask: url('https://i.imgur.com/QxghkRK.png'); }
+        #mapa-sal { -webkit-mask: url('https://i.imgur.com/Y5GBtxy.png'); mask: url('https://i.imgur.com/Y5GBtxy.png'); }
+        #mapa-tuc { -webkit-mask: url('https://i.imgur.com/7J73Reo.png'); mask: url('https://i.imgur.com/7J73Reo.png'); }
+        #mapa-cat { -webkit-mask: url('https://i.imgur.com/zeioqfI.png'); mask: url('https://i.imgur.com/zeioqfI.png'); }
+        #mapa-lro { -webkit-mask: url('https://i.imgur.com/uBqNyMp.png'); mask: url('https://i.imgur.com/uBqNyMp.png'); }
+        #mapa-sde { -webkit-mask: url('https://i.imgur.com/2DuSeiw.png'); mask: url('https://i.imgur.com/2DuSeiw.png'); }
+        #mapa-for { -webkit-mask: url('https://i.imgur.com/7OqPIqb.png'); mask: url('https://i.imgur.com/7OqPIqb.png'); }
+        #mapa-cha { -webkit-mask: url('https://i.imgur.com/P0OxyII.png'); mask: url('https://i.imgur.com/P0OxyII.png'); }
+        #mapa-mis { -webkit-mask: url('https://i.imgur.com/JW4YUFq.png'); mask: url('https://i.imgur.com/JW4YUFq.png'); }
+        #mapa-cor { -webkit-mask: url('https://i.imgur.com/O9KWfrF.png'); mask: url('https://i.imgur.com/O9KWfrF.png'); }
+        #mapa-sfe { -webkit-mask: url('https://i.imgur.com/q5CmfGU.png'); mask: url('https://i.imgur.com/q5CmfGU.png'); }
+        #mapa-eri { -webkit-mask: url('https://i.imgur.com/WgkTiRT.png'); mask: url('https://i.imgur.com/WgkTiRT.png'); }
+        #mapa-cba { -webkit-mask: url('https://i.imgur.com/L7P252y.png'); mask: url('https://i.imgur.com/L7P252y.png'); }
+        #mapa-sju { -webkit-mask: url('https://i.imgur.com/3l87Dja.png'); mask: url('https://i.imgur.com/3l87Dja.png'); }
+        #mapa-slu { -webkit-mask: url('https://i.imgur.com/3PdIgb5.png'); mask: url('https://i.imgur.com/3PdIgb5.png'); }
+        #mapa-mza { -webkit-mask: url('https://i.imgur.com/0qbRgBO.png'); mask: url('https://i.imgur.com/0qbRgBO.png'); }
+        #mapa-pba { -webkit-mask: url('https://i.imgur.com/H2oRBcZ.png'); mask: url('https://i.imgur.com/H2oRBcZ.png'); }
+        #mapa-pam { -webkit-mask: url('https://i.imgur.com/rBEWUBo.png'); mask: url('https://i.imgur.com/rBEWUBo.png'); }
+        #mapa-neu { -webkit-mask: url('https://i.imgur.com/asY1E9k.png'); mask: url('https://i.imgur.com/asY1E9k.png'); }
+        #mapa-rno { -webkit-mask: url('https://i.imgur.com/t0jYGd4.png'); mask: url('https://i.imgur.com/t0jYGd4.png'); }
+        #mapa-chu { -webkit-mask: url('https://i.imgur.com/9Ovjn2L.png'); mask: url('https://i.imgur.com/9Ovjn2L.png'); }
+        #mapa-scr { -webkit-mask: url('https://i.imgur.com/VY7RrU5.png'); mask: url('https://i.imgur.com/VY7RrU5.png'); }
+        #mapa-tdf { -webkit-mask: url('https://i.imgur.com/JOzDzRl.png'); mask: url('https://i.imgur.com/JOzDzRl.png'); }
+        #mapa-cab { -webkit-mask: url('https://i.imgur.com/WFuthky.png'); mask: url('https://i.imgur.com/WFuthky.png'); }
+
+        .overlay-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; z-index: 4; pointer-events: none; }
+
+        /* PANEL DE CONTROL */
+        .panel { width: 1040px; background: #000; padding: 20px; border-left: 2px solid #333; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+        .row-ctrl { display: flex; align-items: center; gap: 8px; background: #111; padding: 10px; border-radius: 6px; margin-bottom: 5px; }
+        .row-ctrl img.flag-ui { width: 50px; height: 35px; object-fit: cover; border-radius: 3px; }
+        .row-ctrl span { flex: 1; font-size: 18px; text-transform: uppercase; font-weight: 700; color: #eee; }
+        
+        input[type="text"], input[type="number"], textarea { padding: 8px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; }
+        .btn-descargar { background: #2ecc71; color: black; border: none; padding: 15px; font-weight: 900; cursor: pointer; border-radius: 4px; margin-top: 10px; }
+        
+        #canvas-render { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="post-wrapper">
+    <div id="post-container">
+        <canvas id="canvas-render"></canvas>
+        <div id="info-fuente"></div>
+        <div id="contenedor-titulos">
+            <div id="mapa-titulo"></div>
+            <div id="mapa-bajada"></div>
+        </div>
+        
+        <div id="mapas-container"></div>
+        <div id="imagenes-layer"></div> 
+        <img class="overlay-img" src="https://i.imgur.com/kUVMliq.png" crossorigin="anonymous">
+        <img class="overlay-img" src="https://i.imgur.com/6hVhhBJ.png" crossorigin="anonymous">
+    </div>
+</div>
+
+<div class="panel">
+    <h2 style="color: #2ecc71; margin: 0; font-size: 18px;">CONFIGURACIÓN GENERAL</h2>
+    <div style="display: flex; flex-direction: column; gap: 10px; background: #1a1a1a; padding: 15px; border-radius: 8px;">
+        <textarea id="inp-titulo" placeholder="TÍTULO..." oninput="actualizarTextos()"></textarea>
+        <input type="text" id="inp-bajada" placeholder="Descripción..." oninput="actualizarTextos()">
+        <input type="text" id="inp-fuente" placeholder="Fuente..." oninput="actualizarTextos()">
+    </div>
+
+    <h2 style="color: #2ecc71; margin: 0; font-size: 18px;">PROVINCIAS (Color e Imagen)</h2>
+    <div id="lista-paises"></div>
+    <button class="btn-descargar" onclick="descargar()">DESCARGAR IMAGEN</button>
+</div>
+
+<script>
+    const tamañosImg = { "1": "120px", "2": "90px", "3": "65px", "4": "40px" };
+
+    const paises = [
+        { id: 'juj', nombre: 'Jujuy', x: 41.5, y: 8.15, flag: 'https://i.imgur.com/4CVVDDF.png' },
+        { id: 'sal', nombre: 'Salta', x: 43.31, y: 13.77, flag: 'https://i.imgur.com/s5t5yVu.png' },
+        { id: 'tuc', nombre: 'Tucumán', x: 43.35, y: 18.52, flag: 'https://i.imgur.com/JJfCDKg.png' },
+        { id: 'cat', nombre: 'Catamarca', x: 36.87, y: 19.11, flag: 'https://i.imgur.com/MrxfCvL.png' },
+        { id: 'lro', nombre: 'La Rioja', x: 37.91, y: 25.77, flag: 'https://i.imgur.com/zRA2U9m.png' },
+        { id: 'sde', nombre: 'S. del Estero', x: 49.72, y: 20.81, flag: 'https://i.imgur.com/hXBwJGV.png' },
+        { id: 'for', nombre: 'Formosa', x: 61.48, y: 13.33, flag: 'https://i.imgur.com/BcT0u7S.png' },
+        { id: 'cha', nombre: 'Chaco', x: 59.2, y: 18.52, flag: 'https://i.imgur.com/IANq7Ic.png' },
+        { id: 'mis', nombre: 'Misiones', x: 77.64, y: 19.63, flag: 'https://i.imgur.com/STqVfag.png' },
+        { id: 'cor', nombre: 'Corrientes', x: 67.5, y: 24.1, flag: 'https://i.imgur.com/MrD1fhN.png' },
+        { id: 'sfe', nombre: 'Santa Fe', x: 57.08, y: 29.26, flag: 'https://i.imgur.com/SJXNdcR.png' },
+        { id: 'eri', nombre: 'Entre Ríos', x: 61.25, y: 33.33, flag: 'https://i.imgur.com/dtYaorD.png' },
+        { id: 'cba', nombre: 'Córdoba', x: 48.32, y: 32.81, flag: 'https://i.imgur.com/x26lgiB.png' },
+        { id: 'sju', nombre: 'San Juan', x: 32.45, y: 29.33, flag: 'https://i.imgur.com/rzIqqRq.png' },
+        { id: 'mza', nombre: 'Mendoza', x: 33.72, y: 39.70, flag: 'https://i.imgur.com/TSGr2VI.png' },
+        { id: 'slu', nombre: 'San Luis', x: 41.17, y: 37.40, flag: 'https://i.imgur.com/C3kBr2y.png' },
+        { id: 'pba', nombre: 'B. Aires', x: 57.62, y: 44.81, flag: 'https://i.imgur.com/wB5gyFl.png' },
+        { id: 'cab', nombre: 'CABA', x: 65.62, y: 39.3, flag: 'https://i.imgur.com/6novWat.png' },
+        { id: 'pam', nombre: 'La Pampa', x: 42.3, y: 46.81, flag: 'https://i.imgur.com/OuCd4aj.png' },
+        { id: 'neu', nombre: 'Neuquén', x: 30.76, y: 50.37, flag: 'https://i.imgur.com/RgbywsI.png' },
+        { id: 'rno', nombre: 'Río Negro', x: 37.97, y: 55.26, flag: 'https://i.imgur.com/MAiUXJ5.png' },
+        { id: 'chu', nombre: 'Chubut', x: 34.18, y: 64.8, flag: 'https://i.imgur.com/x0tZrNP.png' },
+        { id: 'scr', nombre: 'Santa Cruz', x: 31.46, y: 78.29, flag: 'https://i.imgur.com/1LDKRvO.png' },
+        { id: 'tdf', nombre: 'T. del Fuego', x: 38.46, y: 92.59, flag: 'https://i.imgur.com/7oJNJ6D.png' }
+    ];
+
+    function init() {
+        const lista = document.getElementById('lista-paises');
+        const mapasCont = document.getElementById('mapas-container');
+        const imgCont = document.getElementById('imagenes-layer');
+
+        paises.forEach(p => {
+            // Capa de mapa (color)
+            const m = document.createElement('div'); m.id = `mapa-${p.id}`; m.className = 'mapa'; mapasCont.appendChild(m);
+            
+            // Imagen sobre el mapa
+            const img = document.createElement('img'); img.id = `img-map-${p.id}`; img.className = 'img-mapa'; 
+            img.style.left = p.x + "%"; img.style.top = p.y + "%"; img.crossOrigin = "anonymous";
+            imgCont.appendChild(img);
+
+            // Controles
+            const div = document.createElement('div'); div.className = 'row-ctrl';
+            div.innerHTML = `
+                <img src="${p.flag}" class="flag-ui">
+                <span>${p.nombre}</span>
+                <input type="color" id="col-${p.id}" value="#AFAFAF" oninput="actualizar()" style="width:50px; height:40px; border:none; background:none;">
+                <input type="text" id="url-${p.id}" placeholder="URL Imagen..." oninput="actualizar()" style="width:180px;">
+                <input type="number" id="size-${p.id}" value="3" min="1" max="4" oninput="actualizar()" style="width:50px;">
+            `;
+            lista.appendChild(div);
+        });
+    }
+
+    function actualizarTextos() {
+        document.getElementById('mapa-titulo').innerText = document.getElementById('inp-titulo').value;
+        document.getElementById('mapa-bajada').innerText = document.getElementById('inp-bajada').value;
+        document.getElementById('info-fuente').innerText = document.getElementById('inp-fuente').value;
+    }
+
+    function actualizar() {
+        paises.forEach(p => {
+            const colorIn = document.getElementById(`col-${p.id}`).value;
+            const urlIn = document.getElementById(`url-${p.id}`).value;
+            const sizeIn = document.getElementById(`size-${p.id}`).value;
+            
+            const mapa = document.getElementById(`mapa-${p.id}`);
+            const imgMap = document.getElementById(`img-map-${p.id}`);
+
+            // Aplicar color individual
+            mapa.style.backgroundColor = colorIn;
+
+            // Aplicar imagen individual
+            if (urlIn.trim() !== "") {
+                imgMap.src = urlIn;
+                imgMap.style.width = tamañosImg[sizeIn] || "65px";
+                imgMap.style.display = "block";
+            } else {
+                imgMap.style.display = "none";
+            }
+        });
+    }
+
+    async function descargar(){
+        const container = document.getElementById("post-container");
+        const canvasR = document.getElementById("canvas-render");
+        const ctx = canvasR.getContext("2d");
+        canvasR.width = 1080; canvasR.height = 1350;
+        canvasR.style.display = "block";
+        ctx.clearRect(0, 0, 1080, 1350);
+
+        // Renderizar colores de provincias
+        const promesas = paises.map(p => {
+            return new Promise((res) => {
+                const img = new Image(); img.crossOrigin = "anonymous"; img.src = `https://i.imgur.com/${getImgCode(p.id)}.png`;
+                img.onload = () => {
+                    const color = document.getElementById(`col-${p.id}`).value;
+                    const tCanvas = document.createElement('canvas'); tCanvas.width = 1080; tCanvas.height = 1350;
+                    const tCtx = tCanvas.getContext('2d');
+                    tCtx.drawImage(img, 0, 0, 1080, 1350); tCtx.globalCompositeOperation = 'source-in';
+                    tCtx.fillStyle = color; tCtx.fillRect(0, 0, 1080, 1350);
+                    ctx.drawImage(tCanvas, 0, 0); res();
+                };
+                img.onerror = res;
+            });
+        });
+
+        await Promise.all(promesas);
+        document.getElementById("mapas-container").style.opacity = "0";
+        
+        html2canvas(container, { useCORS: true, scale: 1 }).then(canvas => {
+            const link = document.createElement("a");
+            link.download = `Mapa_Personalizado_Zombies_${Date.now()}.png`;
+            link.href = canvas.toDataURL("image/png"); link.click();
+            canvasR.style.display = "none"; document.getElementById("mapas-container").style.opacity = "1";
+        });
+    }
+
+    function getImgCode(id) {
+        const codes = {juj:'QxghkRK',sal:'Y5GBtxy',tuc:'7J73Reo',cat:'zeioqfI',lro:'uBqNyMp',sde:'2DuSeiw',for:'7OqPIqb',cha:'P0OxyII',mis:'JW4YUFq',cor:'O9KWfrF',sfe:'q5CmfGU',eri:'WgkTiRT',cba:'L7P252y',sju:'3l87Dja',slu:'3PdIgb5',mza:'0qbRgBO',pba:'H2oRBcZ',cab:'WFuthky',pam:'rBEWUBo',neu:'asY1E9k',rno:'t0jYGd4',chu:'9Ovjn2L',scr:'VY7RrU5',tdf:'JOzDzRl'};
+        return codes[id];
+    }
+
+    init();
+</script>
+
+</body>
+</html>
